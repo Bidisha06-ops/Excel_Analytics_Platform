@@ -1,26 +1,30 @@
+// backend/server.js
+
 const express = require("express");
-const connectdb = require("./config/db");
-const authRoutes = require("./routes/auth"); // assuming you're using auth.js
+const dotenv = require("dotenv");
+const connectDB = require("./config/db");
+const authRoutes = require("./routes/auth");
 
-const server = express();
-const PORT = 8000;
+dotenv.config();              // Load environment variables
 
-server.use(express.json());
-require("dotenv").config();
+const app = express();        // Initialize express app
+const PORT = process.env.PORT || 8000;
 
+// Middleware
+app.use(express.json());      // JSON body parser
 
-// Connect MongoDB
-connectdb();
+// Connect to MongoDB
+connectDB();
 
-// Use auth routes
-server.use("/api/auth", authRoutes);
+// Routes
+app.use("/api/auth", authRoutes);   // Authentication routes
 
 // Default route
-server.get("/", (req, res) => {
-  res.send("This is my home page");
+app.get("/", (req, res) => {
+  res.status(200).json({ message: "Welcome to the Excel Analytics Platform API" });
 });
 
 // Start server
-server.listen(PORT, () => {
-  console.log(`Your server is running at http://localhost:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`✅ Server running at http://localhost:${PORT}`);
 });
