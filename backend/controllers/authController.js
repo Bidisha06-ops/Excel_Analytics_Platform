@@ -5,37 +5,44 @@ const generateToken = require("../utils/generateTokens");
 // ✅ REGISTER CONTROLLER
 const registeruser = async (req, res) => {
   try {
+    // 1. Destructure request body
     const { username, email, password, role } = req.body;
-    console.log("Role received from client:", role);
 
+    // 2. Validate fields
     if (!username || !email || !password) {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
-    // Validate the role explicitly, allow only 'user' or 'admin'
+    // Validate role explicitly
     const allowedRoles = ["user", "admin"];
     if (!allowedRoles.includes(role)) {
       return res.status(400).json({ success: false, message: "Invalid role specified" });
     }
 
+    // 3. Check for duplicate email
     const existingUser = await usermodel.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ success: false, message: "User already exists" });
     }
 
+    // 4. Encrypt password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await usermodel.create({
+    // 5. Create user object
+    const newUser = new usermodel({
       username,
       email,
       password: hashedPassword,
-      role,  // Use role as sent by client (validated above)
+      role,
     });
 
-    console.log("User saved with role:", user.role);
+    // 6. Save to DB
+    const user = await newUser.save();
 
+    // 7. Generate JWT token
     const token = generateToken(user);
 
+    // 8. Respond with success
     return res.status(201).json({
       success: true,
       message: "User registered successfully",
@@ -47,7 +54,9 @@ const registeruser = async (req, res) => {
         role: user.role,
       },
     });
+
   } catch (error) {
+    // 9. Handle error
     console.error("Register error:", error.message);
     return res.status(500).json({ success: false, message: "Server error during registration" });
   }
@@ -57,9 +66,11 @@ const registeruser = async (req, res) => {
 
 
 
+
 // ✅ LOGIN CONTROLLER
 const loginUser = async (req, res) => {
   try {
+    // 1. Destructure request body
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -69,6 +80,7 @@ const loginUser = async (req, res) => {
       });
     }
 
+    // 2. Find user by email
     const user = await usermodel.findOne({ email });
     if (!user) {
       return res.status(400).json({
@@ -77,6 +89,7 @@ const loginUser = async (req, res) => {
       });
     }
 
+    // 3. Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({
@@ -85,8 +98,10 @@ const loginUser = async (req, res) => {
       });
     }
 
-    const token = generateToken(user); // ✅ Consistent token generation
+    // 4. Generate JWT token
+    const token = generateToken(user);
 
+    // 5. Respond with token and user role
     return res.status(200).json({
       success: true,
       message: "Login successful",
@@ -98,7 +113,9 @@ const loginUser = async (req, res) => {
         role: user.role || "user",
       },
     });
+
   } catch (error) {
+    // 6. Handle error
     console.error("Login error:", error);
     return res.status(500).json({
       success: false,
@@ -106,5 +123,6 @@ const loginUser = async (req, res) => {
     });
   }
 };
+
 
 module.exports = { registeruser, loginUser };

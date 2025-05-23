@@ -4,6 +4,9 @@ const express = require("express");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/auth");
+const userRoutes = require("./routes/user"); // updated to match the new file name
+
+
 
 dotenv.config();              // Load environment variables
 
@@ -18,6 +21,7 @@ connectDB();
 
 // Routes
 app.use("/api/auth", authRoutes);   // Authentication routes
+app.use("/api/user", userRoutes);   // User routes
 
 // Default route
 app.get("/", (req, res) => {
@@ -28,3 +32,4 @@ app.get("/", (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ Server running at http://localhost:${PORT}`);
 });
+
