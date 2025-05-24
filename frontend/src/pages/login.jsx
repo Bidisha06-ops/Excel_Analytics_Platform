@@ -1,17 +1,51 @@
 import React, { useState } from 'react';
+ import { toast ,Toaster} from 'react-hot-toast';
+import { USER_API_END_POINT } from '../api/api'; 
+import { useNavigate } from 'react-router-dom';
+
+
+
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    alert(`Email: ${email}\nPassword: ${password}`);
-    // we will connect to API or validation later
-  };
+
+const navigate = useNavigate();
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    const response = await fetch(`${USER_API_END_POINT}/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      toast.success(`Welcome back, ${data.user.username}!`);
+      localStorage.setItem("token", data.token); // store token if needed
+       navigate("/adminpanel");
+      // Optionally redirect: e.g., window.location.href = '/dashboard';
+    } else {
+      toast.error(data.message || 'Login failed. Please try again.');
+    }
+  } catch (error) {
+    console.error("Login error:", error);
+    toast.error("An error occurred. Please try again later.");
+  }
+};
 
   return (
     <div className="max-w-md mx-auto mt-20 p-8 border border-gray-300 rounded-lg shadow-md bg-green-50 font-sans">
+       <Toaster position="top-right" reverseOrder={false} />
       <h2 className="text-center text-4xl  font-bold mb-6 text-green-800">
         Excel Analytics  Login
       </h2>

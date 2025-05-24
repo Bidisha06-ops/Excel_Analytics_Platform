@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { USER_API_END_POINT } from '../api/api';
+
+import { toast, Toaster } from 'react-hot-toast';
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -16,22 +19,47 @@ function Register() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match.");
+      toast.error("Passwords do not match.");
       return;
     }
 
-    alert(
-      `Username: ${formData.username}\nEmail: ${formData.email}\nRole: ${formData.role}\nPassword: ${formData.password}`
-    );
+    try {
+      const response = await fetch(`${USER_API_END_POINT}/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role
+        })
+      });
 
-    // You can later connect this to your API
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(`${data.message}\nWelcome ${data.user.username}!`);
+        localStorage.setItem("token", data.token);
+        // Optionally redirect or reset form
+      } else {
+        toast.error(data.message || "Registration failed.");
+      }
+    } catch (error) {
+      console.error("Error registering user:", error);
+      toast.error("An error occurred. Please try again.");
+    }
   };
+
 
   return (
     <div className="max-w-md mx-auto mt-20 p-8 border border-gray-300 rounded-lg shadow-md bg-green-50 font-sans">
+     <Toaster position="top-right" reverseOrder={false} />
       <h2 className="text-center text-2xl font-bold mb-6 text-green-800">
         Excel Analytics Platform Register
       </h2>
@@ -71,7 +99,7 @@ function Register() {
         >
           <option value="">Select Role</option>
           <option value="user">User</option>
-          <option value="author">Author</option>
+          <option value="admin">Admin</option>
         </select>
 
         <label htmlFor="password" className="block mb-2 text-green-700 font-medium">Password</label>

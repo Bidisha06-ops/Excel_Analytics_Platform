@@ -2,6 +2,7 @@
 
 const express = require("express");
 const dotenv = require("dotenv");
+const cors = require("cors");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user"); // updated to match the new file name
@@ -12,7 +13,7 @@ dotenv.config();              // Load environment variables
 
 const app = express();        // Initialize express app
 const PORT = process.env.PORT || 8000;
-
+app.use(cors());
 // Middleware
 app.use(express.json());      // JSON body parser
 
