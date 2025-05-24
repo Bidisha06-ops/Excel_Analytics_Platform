@@ -8,9 +8,9 @@ function Footer() {
           &copy; {new Date().getFullYear()} Excel Analytics. All rights reserved.
         </p>
         <div className="mt-4 sm:mt-0 flex justify-center gap-4 text-sm">
-          <a href="#" className="hover:underline">Privacy Policy</a>
-          <a href="#" className="hover:underline">Terms of Service</a>
-          <a href="#" className="hover:underline">Contact</a>
+          <a href="/" className="hover:underline">Privacy Policy</a>
+          <a href="/" className="hover:underline">Terms of Service</a>
+          <a href="/" className="hover:underline">Contact</a>
         </div>
       </div>
     </footer>
