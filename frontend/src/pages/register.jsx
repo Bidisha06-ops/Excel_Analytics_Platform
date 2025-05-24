@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+
 function Register() {
   const [formData, setFormData] = useState({
-    name: '',
+    username: '',
     email: '',
     password: '',
     confirmPassword: '',
+    role: '',
   });
 
   const handleChange = (e) => {
@@ -20,7 +22,11 @@ function Register() {
       alert("Passwords do not match.");
       return;
     }
-    alert(`Name: ${formData.name}\nEmail: ${formData.email}\nPassword: ${formData.password}`);
+
+    alert(
+      `Username: ${formData.username}\nEmail: ${formData.email}\nRole: ${formData.role}\nPassword: ${formData.password}`
+    );
+
     // You can later connect this to your API
   };
 
@@ -30,13 +36,13 @@ function Register() {
         Excel Analytics Platform Register
       </h2>
       <form onSubmit={handleSubmit}>
-        <label htmlFor="name" className="block mb-2 text-green-700 font-medium">Name</label>
+        <label htmlFor="username" className="block mb-2 text-green-700 font-medium">Username</label>
         <input
           type="text"
-          name="name"
-          id="name"
-          placeholder="Enter your name"
-          value={formData.name}
+          name="username"
+          id="username"
+          placeholder="Choose a username"
+          value={formData.username}
           onChange={handleChange}
           required
           className="w-full p-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-600"
@@ -53,6 +59,20 @@ function Register() {
           required
           className="w-full p-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-600"
         />
+
+        <label htmlFor="role" className="block mb-2 text-green-700 font-medium">Role</label>
+        <select
+          name="role"
+          id="role"
+          value={formData.role}
+          onChange={handleChange}
+          required
+          className="w-full p-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-600"
+        >
+          <option value="">Select Role</option>
+          <option value="user">User</option>
+          <option value="author">Author</option>
+        </select>
 
         <label htmlFor="password" className="block mb-2 text-green-700 font-medium">Password</label>
         <input
@@ -86,12 +106,11 @@ function Register() {
         </button>
       </form>
       <p className="text-sm text-center text-green-800 mt-4">
-  Already have an account?{' '}
-  <a href="/login" className="text-green-900 underline hover:text-green-950">
-    Login
-  </a>
-</p>
-
+        Already have an account?{' '}
+        <a href="/login" className="text-green-900 underline hover:text-green-950">
+          Login
+        </a>
+      </p>
     </div>
   );
 }
