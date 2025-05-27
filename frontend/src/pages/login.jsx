@@ -1,53 +1,52 @@
 import React, { useState } from 'react';
- import { toast ,Toaster} from 'react-hot-toast';
-import { USER_API_END_POINT } from '../api/api'; 
+import { toast, Toaster } from 'react-hot-toast';
+import { USER_API_END_POINT } from '../api/api';
 import { useNavigate } from 'react-router-dom';
-
-
-
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch(`${USER_API_END_POINT}/login`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ email, password }), // ✅ Remove credentials
+});
 
 
-const navigate = useNavigate();
-const handleSubmit = async (e) => {
-  e.preventDefault();
 
-  try {
-    const response = await fetch(`${USER_API_END_POINT}/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    });
+      const data = await response.json();
 
-    const data = await response.json();
+      if (response.ok) {
+        toast.success(`Welcome back, ${data.user.username}!`);
+        localStorage.setItem('token', data.token);
 
-    if (response.ok) {
-      toast.success(`Welcome back, ${data.user.username}!`);
-      localStorage.setItem("token", data.token); // store token if needed
-       navigate("/adminpanel");
-      // Optionally redirect: e.g., window.location.href = '/dashboard';
-    } else {
-      toast.error(data.message || 'Login failed. Please try again.');
+        if (data.user.role === 'admin') {
+          navigate('/adminpanel');
+        } else {
+          navigate('/dashboard');
+        }
+      } else {
+        toast.error(data.message || 'Login failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('An error occurred. Please try again later.');
     }
-  } catch (error) {
-    console.error("Login error:", error);
-    toast.error("An error occurred. Please try again later.");
-  }
-};
+  };
 
   return (
     <div className="max-w-md mx-auto mt-20 p-8 border border-gray-300 rounded-lg shadow-md bg-green-50 font-sans">
-       <Toaster position="top-right" reverseOrder={false} />
-      <h2 className="text-center text-4xl  font-bold mb-6 text-green-800">
-        Excel Analytics  Login
+      <Toaster position="top-right" reverseOrder={false} />
+      <h2 className="text-center text-4xl font-bold mb-6 text-green-800">
+        Excel Analytics Login
       </h2>
       <form onSubmit={handleSubmit}>
         <label htmlFor="email" className="block mb-3 text-green-700 font-medium">
@@ -82,14 +81,14 @@ const handleSubmit = async (e) => {
         >
           Login
         </button>
-  
       </form>
+
       <p className="text-sm text-center text-green-800 mt-4">
-  Don’t have an account?{' '}
-  <a href="/register" className="text-green-900 underline hover:text-green-950">
-    Register
-  </a>
-</p>
+        Don’t have an account?{' '}
+        <a href="/register" className="text-green-900 underline hover:text-green-950">
+          Register
+        </a>
+      </p>
     </div>
   );
 }

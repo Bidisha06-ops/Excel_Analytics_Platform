@@ -13,7 +13,13 @@ dotenv.config();              // Load environment variables
 
 const app = express();        // Initialize express app
 const PORT = process.env.PORT || 8000;
-app.use(cors());
+
+
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
+
 // Middleware
 app.use(express.json());      // JSON body parser
 
