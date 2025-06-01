@@ -2,33 +2,33 @@ const usermodel = require("../models/user");
 const bcrypt = require("bcrypt");
 const generateToken = require("../utils/generateTokens");
 
-// ✅ REGISTER CONTROLLER
+
 const registeruser = async (req, res) => {
   try {
-    // 1. Destructure request body
+    //  It will Destructure request body
     const { username, email, password, role } = req.body;
 
-    // 2. Validate fields
+    // 2. It is the Validate fields
     if (!username || !email || !password) {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
-    // Validate role explicitly
+    // Here the Validate role explicitly
     const allowedRoles = ["user", "admin"];
     if (!allowedRoles.includes(role)) {
       return res.status(400).json({ success: false, message: "Invalid role specified" });
     }
 
-    // 3. Check for duplicate email
+    // Here the Check for duplicate email
     const existingUser = await usermodel.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ success: false, message: "User already exists" });
     }
 
-    // 4. Encrypt password
+    // we can Encrypt password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 5. Create user object
+    // to create the user object
     const newUser = new usermodel({
       username,
       email,
@@ -36,13 +36,13 @@ const registeruser = async (req, res) => {
       role,
     });
 
-    // 6. Save to DB
+    // it is for store in DB
     const user = await newUser.save();
 
-    // 7. Generate JWT token
+    // to generate JWT token
     const token = generateToken(user);
 
-    // 8. Respond with success
+    // it respond with success
     return res.status(201).json({
       success: true,
       message: "User registered successfully",
@@ -56,7 +56,8 @@ const registeruser = async (req, res) => {
     });
 
   } catch (error) {
-    // 9. Handle error
+
+    // to handle the error
     console.error("Register error:", error.message);
     return res.status(500).json({ success: false, message: "Server error during registration" });
   }
