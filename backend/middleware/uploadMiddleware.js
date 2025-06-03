@@ -1,7 +1,6 @@
 const multer = require('multer');
 const path = require('path');
 
-
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/');
@@ -13,10 +12,9 @@ const storage = multer.diskStorage({
   }
 });
 
-
 const fileFilter = (req, file, cb) => {
   const allowedTypes = [
-    'application/vnd.ms-excel', // .xls
+    'application/vnd.ms-excel',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
   ];
 
@@ -30,7 +28,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }
+  limits: { fileSize: 5 * 1024 * 1024 } // 5 MB
 });
 
 module.exports = upload;

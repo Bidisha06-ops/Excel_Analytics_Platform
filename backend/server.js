@@ -41,4 +41,7 @@ app.listen(PORT, () => {
 });
 
 const uploadRoutes = require('./routes/upload');
-app.use('/api/upload', uploadRoutes);
+const recordRoutes = require('./routes/record');
+
+app.use('/api/upload', uploadRoutes);  // For POST
+app.use('/api/record', recordRoutes);  // For GET
