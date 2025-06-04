@@ -260,13 +260,13 @@ h2 {
     font-size: 0.9rem;
   }
 
-  .input-group input:focus + label,
-  .input-group input:not(:placeholder-shown) + label {
-    font-size: 1.2rem;
-  }
-
   .login-btn {
     font-size: 1rem;
+  }
+
+.input-group input:focus + label,
+  .input-group input:not(:placeholder-shown) + label {
+    font-size: 100rem;
   }
 }
 

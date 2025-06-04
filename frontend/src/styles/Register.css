@@ -198,6 +198,8 @@ h2 {
   .register-btn {
     font-size: 0.9rem;
   }
+
+
 }
 
 
@@ -234,7 +236,7 @@ h2 {
 
   .input-group input:focus + label,
   .input-group input:not(:placeholder-shown) + label {
-    font-size: 0.7rem;
+    font-size: 1rem;
   }
 }
 
@@ -262,9 +264,6 @@ h2 {
     font-size: 1rem;
   }
 
-  .input-group input:focus + label,
-  .input-group input:not(:placeholder-shown) + label {
-    font-size: 0.7rem;
-  }
+
 }
 
