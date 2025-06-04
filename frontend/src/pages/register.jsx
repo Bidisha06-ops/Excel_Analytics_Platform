@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { USER_API_END_POINT } from '../api/api';
-
 import { toast, Toaster } from 'react-hot-toast';
+import { USER_API_END_POINT } from '../api/api';
+import '../styles/Register.css';
+import '../styles/font.css';
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -13,7 +14,7 @@ function Register() {
   });
 
   const handleChange = (e) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value
     }));
@@ -30,9 +31,7 @@ function Register() {
     try {
       const response = await fetch(`${USER_API_END_POINT}/register`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username: formData.username,
           email: formData.email,
@@ -46,7 +45,7 @@ function Register() {
       if (response.ok) {
         toast.success(`${data.message}\nWelcome ${data.user.username}!`);
         localStorage.setItem("token", data.token);
-        // Optionally redirect or reset form
+        // You might want to redirect or reset form here
       } else {
         toast.error(data.message || "Registration failed.");
       }
@@ -56,89 +55,89 @@ function Register() {
     }
   };
 
-
   return (
-    <div className="max-w-md mx-auto mt-20 p-8 border border-gray-300 rounded-lg shadow-md bg-green-50 font-sans">
-     <Toaster position="top-right" reverseOrder={false} />
-      <h2 className="text-center text-2xl font-bold mb-6 text-green-800">
-        Excel Analytics Platform Register
-      </h2>
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="username" className="block mb-2 text-green-700 font-medium">Username</label>
-        <input
-          type="text"
-          name="username"
-          id="username"
-          placeholder="Choose a username"
-          value={formData.username}
-          onChange={handleChange}
-          required
-          className="w-full p-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-600"
-        />
+    <div className="container">
+      <div className="corner top-left" />
+      <div className="corner bottom-right" />
+      <Toaster position="top-right" reverseOrder={false} />
+      <div className="register-card">
+        <div className="register-content">
+          <h2>Excel Analytics Register</h2>
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="register-input-group">  
+              <input
+                type="text"
+                name="username"
+                id="register-username"
+                placeholder=" "
+                value={formData.username}
+                onChange={handleChange}
+                required
+              />
+              <label htmlFor="register-username">Username</label>
+            </div>
 
-        <label htmlFor="email" className="block mb-2 text-green-700 font-medium">Email</label>
-        <input
-          type="email"
-          name="email"
-          id="email"
-          placeholder="Enter your email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-          className="w-full p-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-600"
-        />
+            <div className="register-input-group">
+              <input
+                type="email"
+                name="email"
+                id="register-email"
+                placeholder=" "
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+              <label htmlFor="register-email">Email</label>
+            </div>
 
-        <label htmlFor="role" className="block mb-2 text-green-700 font-medium">Role</label>
-        <select
-          name="role"
-          id="role"
-          value={formData.role}
-          onChange={handleChange}
-          required
-          className="w-full p-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-600"
-        >
-          <option value="">Select Role</option>
-          <option value="user">User</option>
-          <option value="admin">Admin</option>
-        </select>
+            <div className="register-input-group">
+              <select
+                name="role"
+                id="register-role"
+                value={formData.role}
+                onChange={handleChange}
+                required
+              >
+                <option value="" disabled>Select Role</option>
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select>
+              <label htmlFor="register-role">Role</label>
+            </div>
 
-        <label htmlFor="password" className="block mb-2 text-green-700 font-medium">Password</label>
-        <input
-          type="password"
-          name="password"
-          id="password"
-          placeholder="Create a password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-          className="w-full p-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-600"
-        />
+            <div className="register-input-group">
+              <input
+                type="password"
+                name="password"
+                id="register-password"
+                placeholder=" "
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+              <label htmlFor="register-password">Password</label>
+            </div>
 
-        <label htmlFor="confirmPassword" className="block mb-2 text-green-700 font-medium">Confirm Password</label>
-        <input
-          type="password"
-          name="confirmPassword"
-          id="confirmPassword"
-          placeholder="Confirm your password"
-          value={formData.confirmPassword}
-          onChange={handleChange}
-          required
-          className="w-full p-2 mb-6 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-600"
-        />
+            <div className="register-input-group">
+              <input
+                type="password"
+                name="confirmPassword"
+                id="register-confirmPassword"
+                placeholder=" "
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+              />
+              <label htmlFor="register-confirmPassword">Confirm Password</label>
+            </div>
 
-        <button
-          type="submit"
-          className="w-full py-3 bg-green-700 text-white font-semibold rounded hover:bg-green-800 transition-colors"
-        >
-          Register
-        </button>
-      </form>
-      <p className="text-sm text-center text-green-800 mt-4">
-        Already have an account?{' '}
-        <a href="/login" className="text-green-900 underline hover:text-green-950">
-          Login
-        </a>
-      </p>
+            <button type="submit" className="register-btn">Register</button>
+          </form>
+          <p className="register-link">
+            Already have an account? <a href="/login">Login</a>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

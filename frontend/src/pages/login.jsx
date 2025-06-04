@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { toast, Toaster } from 'react-hot-toast';
 import { USER_API_END_POINT } from '../api/api';
 import { useNavigate } from 'react-router-dom';
-
+import '../styles/Login.css'; // ⬅️ Make sure to import the CSS
+import '../styles/font.css'
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -13,14 +14,12 @@ function Login() {
 
     try {
       const response = await fetch(`${USER_API_END_POINT}/login`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({ email, password }), // ✅ Remove credentials
-});
-
-
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
       const data = await response.json();
 
@@ -43,53 +42,48 @@ function Login() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-20 p-8 border border-gray-300 rounded-lg shadow-md bg-green-50 font-sans">
-      <Toaster position="top-right" reverseOrder={false} />
-      <h2 className="text-center text-4xl font-bold mb-6 text-green-800">
-        Excel Analytics Login
-      </h2>
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="email" className="block mb-3 text-green-700 font-medium">
-          Email
-        </label>
-        <input
-          id="email"
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="w-full p-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-600"
-        />
+    <div className="container">
+      <div className="corner top-left" />
+      <div className="corner bottom-right" />
+      <div className="card">
+        <Toaster position="top-right" reverseOrder={false} />
+        <div className="login-content">
+          <h2>Excel Analytics Login</h2>
+          <form onSubmit={handleSubmit}>
+            <div className="input-group">
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <label htmlFor="email">Email</label>
+            </div>
 
-        <label htmlFor="password" className="block mb-2 text-green-700 font-medium">
-          Password
-        </label>
-        <input
-          id="password"
-          type="password"
-          placeholder="Enter your password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          className="w-full p-2 mb-6 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-600"
-        />
+            <div className="input-group">
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <label htmlFor="password">Password</label>
+            </div>
 
-        <button
-          type="submit"
-          className="w-full py-3 bg-green-700 text-white font-semibold rounded hover:bg-green-800 transition-colors"
-        >
-          Login
-        </button>
-      </form>
+            <button type="submit" className="login-btn">
+              Login
+            </button>
+          </form>
 
-      <p className="text-sm text-center text-green-800 mt-4">
-        Don’t have an account?{' '}
-        <a href="/register" className="text-green-900 underline hover:text-green-950">
-          Register
-        </a>
-      </p>
+          <p className="register-link">
+            Don’t have an account? <a href="/register">Register</a>
+          </p>
+        </div>
+      </div>
     </div>
+
   );
 }
 
