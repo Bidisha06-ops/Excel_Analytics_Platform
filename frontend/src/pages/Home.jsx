@@ -1,60 +1,66 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { BarChart2, FileSpreadsheet, Settings, Download } from 'lucide-react';
+import { Link } from 'react-router-dom';      // <-- import Link here
 import '../styles/home.css';
+import dashboardImg from '../images/logo.png';
+import { FaUpload, FaCogs, FaChartBar, FaFileExport } from 'react-icons/fa';
 import Navbar from './Navbar';
+import '../styles/font.css'
 
 function Home() {
   return (
     <>
       <Navbar />
-
-      <main className="home-main">
-        <section className="intro-section">
-          <h1><b>Excel Analytics Platform</b></h1>
-          <p>Upload, visualize, and understand your spreadsheet data like never before.</p>
-          <div className="button-group">
-            <Link to="/login" className="btn-primary">
-              Get Started
-            </Link>
-            <Link to="/register" className="btn-secondary">
-              Register
-            </Link>
+      <div className="home-container">
+        <div className="top-section">
+          {/* Left image */}
+          <div className="image-frame">
+            <img src={dashboardImg} alt="Analytics Dashboard" />
           </div>
-        </section>
 
-        <section className="features-section" aria-label="Features">
-          <div className="features-grid">
-            <FeatureCard
-              icon={<FileSpreadsheet size={40} className="feature-icon" />}
-              title="Smart Uploads"
-            />
-            <FeatureCard
-              icon={<BarChart2 size={40} className="feature-icon" />}
-              title="Interactive Charts"
-            />
-            <FeatureCard
-              icon={<Settings size={40} className="feature-icon" />}
-              title="Custom Filters"
-            />
-            <FeatureCard
-              icon={<Download size={40} className="feature-icon" />}
-              title="Export Reports"
-            />
+          {/* Right text */}
+          <div className="text-content">
+            <h1><b>EXCEL ANALYTICS <br /> PLATFORM</b></h1>
+            <p>
+              A platform to the use of Microsoft Excel, or similar spreadsheet software,
+              to analyze and visualize data, often in conjunction with other tools or features.
+            </p>
+
+            <div className="button-group">
+              {/* Changed buttons to Links */}
+              <Link to="/login" className="btn primary">
+                Get Started
+              </Link>
+              <Link to="/register" className="btn secondary">
+                Register
+              </Link>
+            </div>
           </div>
-        </section>
-      </main>
+        </div>
+
+        {/* Feature icons below */}
+        <div className="feature-section">
+          <div className="feature-item">
+            <FaUpload />
+            <span>SMART UPLOAD</span>
+          </div>
+          <div className="feature-item">
+            <FaCogs />
+            <span>CUSTOM FILTER</span>
+          </div>
+          <div className="feature-item">
+            <FaChartBar />
+            <span>INTERACTIVE CHART</span>
+          </div>
+          <div className="feature-item">
+            <FaFileExport />
+            <span>EXPORT REPORTS</span>
+          </div>
+        </div>
+
+        {/* Background */}
+        <div className="wave-image" />
+      </div>
     </>
-  );
-}
-
-function FeatureCard({ icon, title, desc }) {
-  return (
-    <div className="feature-card">
-      <div className="icon-wrapper">{icon}</div>
-      <h3 className="feature-title">{title}</h3>
-      <p className="feature-desc">{desc}</p>
-    </div>
   );
 }
 
