@@ -55,7 +55,7 @@ h2 {
 }
 
 /* Card */
-.card {
+.login-card {
   width: 100%;
   max-width: 600px;
   background-color: #fff;
@@ -228,7 +228,7 @@ h2 {
 
 /* Responsive: Mobile */
 @media (max-width: 480px) {
- .card {
+ .login-card {
     margin-left: 0rem;
     width: 20rem;   
     margin-top: -3rem;

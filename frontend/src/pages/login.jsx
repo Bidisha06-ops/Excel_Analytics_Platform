@@ -45,7 +45,7 @@ function Login() {
     <div className="container">
       <div className="corner top-left" />
       <div className="corner bottom-right" />
-      <div className="card">
+      <div className="login-card">
         <Toaster position="top-right" reverseOrder={false} />
         <div className="login-content">
           <h2>Excel Analytics Login</h2>
