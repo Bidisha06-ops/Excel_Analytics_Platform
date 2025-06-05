@@ -33,10 +33,12 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
 
     // Save to MongoDB
     const newRecord = new ExcelRecord({
-      data: jsonData,
-      uploadedBy: req.user.id,
-      uploadedAt: new Date(),
-    });
+  filename: req.file.originalname, // 👈 Add this
+  data: jsonData,
+  uploadedBy: req.user.id,
+  uploadedAt: new Date(),
+});
+
 
     const savedRecord = await newRecord.save();
 

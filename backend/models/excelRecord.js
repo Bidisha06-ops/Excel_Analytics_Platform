@@ -1,8 +1,12 @@
 const mongoose = require('mongoose');
 
 const excelRecordSchema = new mongoose.Schema({
+  filename: {
+    type: String,
+    required: true,
+  },
   data: {
-    type: [mongoose.Schema.Types.Mixed], // Excel rows
+    type: Array,
     required: true,
   },
   uploadedBy: {

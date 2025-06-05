@@ -9,6 +9,7 @@ const userRoutes = require("./routes/user"); // updated to match the new file na
 
 
 
+
 dotenv.config();              // Load environment variables
 
 const app = express();        // Initialize express app
@@ -44,4 +45,6 @@ const uploadRoutes = require('./routes/upload');
 const recordRoutes = require('./routes/record');
 
 app.use('/api/upload', uploadRoutes);  // For POST
-app.use('/api/record', recordRoutes);  // For GET
+app.use('/api/records', recordRoutes);
+app.use('/uploads', express.static('uploads'));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
