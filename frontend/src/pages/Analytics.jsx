@@ -39,32 +39,41 @@ const Analytics = () => {
   const [columns, setColumns] = useState([]);
   const [chartType, setChartType] = useState('bar'); // default to bar
 
+
   useEffect(() => {
-    const fetchRecord = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const config = {
-          headers: { Authorization: `Bearer ${token}` },
-        };
+  const fetchRecord = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: { Authorization: `Bearer ${token}` },
+      };
 
-        const res = await axios.get(`http://localhost:8000/api/records/${id}`, config);
-        setRecord(res.data);
+      const res = await axios.get(`http://localhost:8000/api/records/${id}`, config);
+      setRecord(res.data);
 
-        if (res.data.data && res.data.data.length > 0) {
-          const keys = Object.keys(res.data.data[0]);
-          setColumns(keys);
-          setSelectedColumn(keys[0]); // default column
-        }
-      } catch (error) {
-        console.error('Error fetching record:', error);
-        toast.error('Failed to load record');
-      } finally {
-        setLoading(false);
+      if (res.data.data && res.data.data.length > 0) {
+        const keys = Object.keys(res.data.data[0]);
+        setColumns(keys);
+        setSelectedColumn(keys[0]);
       }
-    };
 
-    fetchRecord();
-  }, [id]);
+      // Always attempt to log - backend prevents duplicates
+      await axios.post(
+        `http://localhost:8000/api/activity/analyze/${id}`,
+        { filename: res.data.filename || 'unknown file' },
+        config
+      );
+
+    } catch (error) {
+      console.error('Error fetching record or logging analyze activity:', error);
+      toast.error('Failed to load record or log activity');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchRecord();
+}, [id]);
 
   if (loading) return <p>Loading...</p>;
   if (!record) return <p>No record found.</p>;

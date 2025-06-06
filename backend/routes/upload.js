@@ -2,54 +2,63 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
+const XLSX = require('xlsx');
 const ExcelRecord = require('../models/excelRecord');
+const Activity = require('../models/Activity');
 const { protect } = require('../middleware/auth');
-const XLSX = require('xlsx'); // Excel parser
 
-// Multer config
+// Multer configuration (store in memory)
 const storage = multer.memoryStorage();
 const fileFilter = (req, file, cb) => {
-  const ext = path.extname(file.originalname);
+  const ext = path.extname(file.originalname).toLowerCase();
   if (ext !== '.xls' && ext !== '.xlsx') {
-    return cb(new Error('Only Excel files are allowed'));
+    return cb(new Error('Only Excel files are allowed'), false);
   }
   cb(null, true);
 };
 const upload = multer({ storage, fileFilter });
 
-/**
- * @route POST /api/upload
- * @desc Upload Excel file, parse it, and store content
- */
+// @route   POST /api/upload
+// @desc    Upload Excel file, parse & store data, log activity
+// @access  Protected
 router.post('/', protect, upload.single('file'), async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
 
-    // Parse Excel file from buffer
+    // Parse Excel from buffer
     const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
-    const jsonData = XLSX.utils.sheet_to_json(sheet); // Array of objects
+    const jsonData = XLSX.utils.sheet_to_json(sheet);
 
-    // Save to MongoDB
+    // Save Excel data to DB
     const newRecord = new ExcelRecord({
-  filename: req.file.originalname, // 👈 Add this
-  data: jsonData,
-  uploadedBy: req.user.id,
-  uploadedAt: new Date(),
-});
-
+      filename: req.file.originalname,
+      data: jsonData,
+      uploadedBy: req.user.id,
+      uploadedAt: new Date(),
+    });
 
     const savedRecord = await newRecord.save();
 
-    res.json({
-      message: 'File uploaded and data saved successfully',
-      file: req.file.originalname,
+    // Log activity
+    await Activity.create({
+      userId: req.user.id,
+      action: 'upload',
+      filename: req.file.originalname,
+      timestamp: new Date(),
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'File uploaded and saved successfully',
       record: savedRecord,
     });
   } catch (error) {
     console.error('Upload error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error while uploading file' });
   }
 });
 

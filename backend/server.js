@@ -1,37 +1,43 @@
-// backend/server.js
-
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./config/db");
+
+// Route files
 const authRoutes = require("./routes/auth");
-const userRoutes = require("./routes/user"); // updated to match the new file name
+const userRoutes = require("./routes/user");
+const uploadRoutes = require("./routes/upload");
+const recordRoutes = require("./routes/record");
+const activityRoutes = require("./routes/activity");
 
+// Load environment variables
+dotenv.config();
 
-
-
-dotenv.config();              // Load environment variables
-
-const app = express();        // Initialize express app
+// Initialize express app
+const app = express();
 const PORT = process.env.PORT || 8000;
-
-
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true
-}));
-
-// Middleware
-app.use(express.json());      // JSON body parser
 
 // Connect to MongoDB
 connectDB();
 
-// Routes
-app.use("/api/auth", authRoutes);   // Authentication routes
-app.use("/api/user", userRoutes);   // User routes
+// Middleware
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true,
+}));
+app.use(express.json()); // For parsing application/json
 
-// Default route
+// Static file serving (for profile images or uploads if needed)
+app.use('/uploads', express.static('uploads'));
+
+// Routes
+app.use("/api/auth", authRoutes);          // Auth: login/register
+app.use("/api/user", userRoutes);          // User profile management
+app.use("/api/upload", uploadRoutes);      // Excel file uploads
+app.use("/api/records", recordRoutes);     // Get uploaded files
+app.use("/api/activity", activityRoutes);  // Activity log routes
+
+// Root route
 app.get("/", (req, res) => {
   res.status(200).json({ message: "Welcome to the Excel Analytics Platform API" });
 });
@@ -40,11 +46,3 @@ app.get("/", (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ Server running at http://localhost:${PORT}`);
 });
-
-const uploadRoutes = require('./routes/upload');
-const recordRoutes = require('./routes/record');
-
-app.use('/api/upload', uploadRoutes);  // For POST
-app.use('/api/records', recordRoutes);
-app.use('/uploads', express.static('uploads'));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
