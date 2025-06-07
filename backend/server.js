@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require("mongoose");        // <-- add this line
 const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./config/db");
@@ -17,9 +18,6 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-// Connect to MongoDB
-connectDB();
-
 // Middleware
 app.use(cors({
   origin: 'http://localhost:3000',
@@ -37,12 +35,58 @@ app.use("/api/upload", uploadRoutes);      // Excel file uploads
 app.use("/api/records", recordRoutes);     // Get uploaded files
 app.use("/api/activity", activityRoutes);  // Activity log routes
 
+
+// Storage stats endpoint
+app.get("/api/storage", async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) { // 1 means connected
+      return res.status(500).json({ error: "MongoDB not connected yet" });
+    
+    }
+    
+    const db = mongoose.connection.db;
+   
+
+    if (!db) {
+      return res.status(500).json({ error: "Database object not available" });
+    }
+
+    const stats = await db.stats();
+
+    const totalQuota = 512 * 1024 * 1024; // 512MB quota (adjust if needed)
+
+    res.json({
+      storageSize: stats.storageSize,
+      dataSize: stats.dataSize,
+      totalQuota,
+      collections: stats.collections,
+      objects: stats.objects,
+      indexes: stats.indexes,
+      indexSize: stats.indexSize,
+    });
+  } catch (error) {
+    console.error("Error fetching db stats:", error);
+    res.status(500).json({ error: "Failed to fetch storage stats" });
+  }
+});
+
+
 // Root route
 app.get("/", (req, res) => {
   res.status(200).json({ message: "Welcome to the Excel Analytics Platform API" });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`✅ Server running at http://localhost:${PORT}`);
-});
+// Connect to DB and then start server
+connectDB()
+  .then(() => {
+    console.log("✅ MongoDB connected successfully");  // <-- add this line
+    app.listen(PORT, () => {
+      console.log(`✅ Server running at http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Failed to connect to database", err);
+    process.exit(1);
+  });
+
+
