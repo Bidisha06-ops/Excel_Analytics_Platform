@@ -1,8 +1,8 @@
-// src/components/DashboardLayout.jsx
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/DashboardLayout.css';
+import { LogOut } from 'lucide-react';
 
 const BACKEND_URL = 'http://localhost:8000';
 
@@ -15,18 +15,17 @@ const DashboardLayout = () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          navigate('/login'); // redirect if no token
+          navigate('/login');
           return;
         }
         const res = await axios.get(`${BACKEND_URL}/api/user/profile`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(res.data.user);
-        // Optionally save username in localStorage to keep old code compatible
         localStorage.setItem('username', res.data.user.username);
       } catch (error) {
         console.error('Failed to fetch user:', error);
-        navigate('/login'); // redirect on error or unauthorized
+        navigate('/login');
       }
     };
 
@@ -35,35 +34,41 @@ const DashboardLayout = () => {
 
   return (
     <div className="dashboardlayout-container">
-      <header className="dashboardlayout-header">
-        <img src="/images/ZIDIO.webp" alt="Logo" className="dashboardlayout-logo" />
-        <h2>Welcome, {user?.username || localStorage.getItem('username') || 'User'}</h2>
-        <img
-          src={
-            user?.profileImage
-              ? `${BACKEND_URL}${user.profileImage}`
-              : '/images/avatar.png'
-          }
-          alt="Profile"
-          className="dashboardlayout-profile-pic"
-          onClick={() => navigate('/dashboard/profile')}
-        />
+      <header className="dashboardlayout-header slide-down">
+        <div className="header-left">
+          <img src="/images/ZIDIO.webp" alt="Logo" className="dashboardlayout-logo" />
+        </div>
+        <div className="header-center">
+          Excel Analytics Platform
+        </div>
+        <div className="header-right">
+          <span className="header-username">{user?.username || localStorage.getItem('username') || 'User'}</span>
+          <img
+            src={
+              user?.profileImage
+                ? `${BACKEND_URL}${user.profileImage}`
+                : '/images/avatar.png'
+            }
+            alt="Profile"
+            className="dashboardlayout-profile-pic "
+            onClick={() => navigate('/dashboard/profile')}
+          />
+        </div>
       </header>
 
       <div className="dashboardlayout-body">
-        <aside className="dashboardlayout-sidebar">
+        <aside className="dashboardlayout-sidebar slide-left">
           <button onClick={() => navigate('/dashboard')}>Dashboard</button>
           <button onClick={() => navigate('/dashboard/upload')}>Upload File</button>
           <button onClick={() => navigate('/dashboard/activity')}>Activity Log</button>
           <button onClick={() => navigate('/dashboard/profile')}>Profile</button>
-          <button
-            onClick={() => {
-              localStorage.clear();
-              navigate('/login');
-            }}
-          >
-            Logout
-          </button>
+          <button className="logout-button" onClick={() => {
+  localStorage.clear();
+  navigate('/login');
+}}>
+  <LogOut size={20} />
+  Logout
+</button>
         </aside>
 
         <main className="dashboardlayout-main">

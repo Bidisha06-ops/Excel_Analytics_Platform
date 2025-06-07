@@ -25,8 +25,8 @@
 }
 
 .dashboardlayout-header .dashboardlayout-profile-pic {
-  height: 40px;
-  width: 40px;
+  height: 30px;
+  width: 30px;
   border-radius: 50%;
   object-fit: cover;
   cursor: pointer;
@@ -75,4 +75,87 @@
   padding: 2rem;
   background-color: #f0f0f0;
   min-width: 0;
+}
+/* New header layout structure */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-dev-label {
+  font-size: 10px;
+  font-weight: bold;
+  color: #555;
+  letter-spacing: 1px;
+  margin-top: 10px;
+}
+
+.header-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 18px;
+  font-weight: 900;
+ color: #000000; /* full black */
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-username {
+  font-weight: 700;
+   color: #111111; 
+}
+/* Slide down animation for header */
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+}
+
+.slide-down {
+  animation: slideDown 0.6s ease-out;
+}
+
+/* Slide left animation for sidebar */
+@keyframes slideLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0%);
+    opacity: 1;
+  }
+}
+
+.slide-left {
+  animation: slideLeft 0.6s ease-out;
+}
+.logout-button {
+  margin-top: auto;              /* Push to bottom */
+  background-color: #661111;
+  border-radius: 5px;
+  padding: 10px 14px;
+  transition: background 0.3s;
+  display: flex;                 /* Put icon and text in a row */
+  align-items: center;
+  gap: 8px;                      /* Space between icon and text */
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+}
+
+.logout-button:hover {
+  background-color: #aa2222;
 }
