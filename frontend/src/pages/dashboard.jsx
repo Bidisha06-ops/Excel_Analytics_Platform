@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/dashboard.css';
@@ -30,23 +30,54 @@ const Dashboard = () => {
 
   const strokeColor = getStrokeColor(progressPercent);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const config = { headers: { Authorization: `Bearer ${token}` } };
-        const uploadsRes = await axios.get('http://localhost:8000/api/records/myuploads', config);
-        const activityRes = await axios.get('http://localhost:8000/api/activity/recent', config);
-        setUploads(uploadsRes.data);
-        setActivityLogs(activityRes.data);
-      } catch (err) {
-        console.error('Dashboard data fetch error:', err);
-      }
-    };
-    if (token) fetchData();
+  // Create a fetch function that can be called on mount and after updates
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const uploadsRes = await axios.get('http://localhost:8000/api/records/myuploads', config);
+      const activityRes = await axios.get('http://localhost:8000/api/activity/recent', config);
+      setUploads(uploadsRes.data);
+      setActivityLogs(activityRes.data);
+    } catch (err) {
+      console.error('Dashboard data fetch error:', err);
+    }
   }, [token]);
 
-  const handleAnalyze = (id) => {
-    navigate(`/dashboard/analytics/${id}`);
+  // Initial data fetch
+  useEffect(() => {
+    if (token) fetchDashboardData();
+  }, [token, fetchDashboardData]);
+
+  // Function to handle profile photo update (you need to call this on your profile UI)
+  const handleProfilePhotoUpdate = async (newPhotoData) => {
+    try {
+      console.log('🔼 Sending photo update:', newPhotoData.slice(0, 30)); // trimmed preview
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      };
+      const res = await axios.put(
+        'http://localhost:8000/api/activity/profile',
+        { photo: newPhotoData },
+        config
+      );
+
+      if (res.data.success) {
+        console.log('✅ Photo updated successfully');
+        fetchDashboardData(); // Reload logs and uploads
+      } else {
+        console.warn('⚠️ Update failed:', res.data);
+      }
+    } catch (error) {
+      console.error('❌ Profile photo update failed:', error);
+    }
+  };
+
+  // Function to handle Analyze button click - navigate to analytics page with upload id
+  const handleAnalyze = (uploadId) => {
+    navigate(`/dashboard/analytics/${uploadId}`);
   };
 
   return (
@@ -133,7 +164,8 @@ const Dashboard = () => {
                         {log.action === 'analyze' && `Analyzed ${log.filename}`}
                         {log.action === 'export' && `Exported report of ${log.filename}`}
                         {log.action === 'update-profile' && 'Changed username'}
-                        {!['upload', 'analyze', 'export', 'update-profile'].includes(log.action) &&
+                        {log.action === 'update-photo' && 'Updated profile photo'}
+                        {!['upload', 'analyze', 'export', 'update-profile', 'update-photo'].includes(log.action) &&
                           `${log.action} performed`}
                         {' '}on {new Date(log.timestamp).toLocaleString()}
                       </li>
@@ -183,4 +215,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-  

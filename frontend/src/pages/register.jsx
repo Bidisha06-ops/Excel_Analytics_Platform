@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { toast, Toaster } from 'react-hot-toast';
 import { USER_API_END_POINT } from '../api/api';
+import { useNavigate } from 'react-router-dom'; // ✅ Import navigate
 import '../styles/Register.css';
 import '../styles/font.css';
 
@@ -12,6 +13,8 @@ function Register() {
     confirmPassword: '',
     role: '',
   });
+
+  const navigate = useNavigate(); // ✅ Initialize navigation
 
   const handleChange = (e) => {
     setFormData(prev => ({
@@ -45,7 +48,9 @@ function Register() {
       if (response.ok) {
         toast.success(`${data.message}\nWelcome ${data.user.username}!`);
         localStorage.setItem("token", data.token);
-        // You might want to redirect or reset form here
+        setTimeout(() => {
+          navigate('/login'); // ✅ Redirect after success
+        }, 1500);
       } else {
         toast.error(data.message || "Registration failed.");
       }
