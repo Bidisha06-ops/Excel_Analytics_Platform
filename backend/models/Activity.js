@@ -18,6 +18,9 @@ const activitySchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Record', // assuming you have a Record model
   },
+  details: {    // NEW: to specify what changed in update-profile
+    type: String,
+  },
   timestamp: {
     type: Date,
     default: Date.now,

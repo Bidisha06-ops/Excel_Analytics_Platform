@@ -1,11 +1,13 @@
 /* Main layout container */
 .dashboardlayout-container {
+  position: relative; /* 👈 REQUIRED */
   display: flex;
   flex-direction: column;
   height: 100%;
   width: 100vw;
   max-width: 100vw;
-  background-color: #f5f5f5;
+  background-color: #ffffff;
+  overflow: hidden;
 }
 
 /* Header */
@@ -15,9 +17,11 @@
   justify-content: space-between;
   align-items: center;
   padding: 0 1rem;
-  background-color: #ffffff;
   border-bottom: 1px solid #ccc;
   flex-shrink: 0;
+  background-color: #ffffff; /* solid white */
+  z-index: 1;
+  position: relative;
 }
 
 .dashboardlayout-header .dashboardlayout-logo {
@@ -76,6 +80,7 @@
   background-color: #f0f0f0;
   min-width: 0;
 }
+
 /* New header layout structure */
 .header-left {
   display: flex;
@@ -97,7 +102,7 @@
   transform: translateX(-50%);
   font-size: 18px;
   font-weight: 900;
- color: #000000; /* full black */
+  color: #000000; /* full black */
 }
 
 .header-right {
@@ -108,8 +113,9 @@
 
 .header-username {
   font-weight: 700;
-   color: #111111; 
+  color: #111111;
 }
+
 /* Slide down animation for header */
 @keyframes slideDown {
   from {
@@ -141,6 +147,7 @@
 .slide-left {
   animation: slideLeft 0.6s ease-out;
 }
+
 .logout-button {
   margin-top: auto;              /* Push to bottom */
   background-color: #661111;
@@ -158,4 +165,68 @@
 
 .logout-button:hover {
   background-color: #aa2222;
+}
+
+/* ========== Decorative Corners ========== */
+.background-decorations {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0; /* 👈 Behind content but still rendered */
+  pointer-events: none; /* So it doesn’t block clicks */
+  overflow: hidden;
+}
+
+.top-right-decoration {
+  position: absolute;
+  top: -300px;
+  right: -200px;
+  width: 500px;
+  height: 500px;
+  background: #070a12; /* darker shade */
+  border-radius: 20px;
+  transform: rotate(45deg);
+  opacity: 0.2;
+  z-index: 0;
+  animation: diagonalSlideInTop 1.5s ease-out forwards;
+}
+
+.bottom-right-decoration {
+  position: absolute;
+  bottom: -300px;
+  right: -250px;
+  width: 500px;
+  height: 500px;
+  background: #070a12; /* darker shade */
+  border-radius: 25px;
+  transform: rotate(45deg);
+  opacity: 0.2;
+  z-index: 0;
+  animation: diagonalSlideInBottom 1.5s ease-out forwards;
+}
+
+ 
+
+@keyframes diagonalSlideInTop {
+  from {
+    transform: translate(200px, -200px) rotate(45deg);
+    opacity: 0;
+  }
+  to {
+    transform: translate(0, 0) rotate(45deg);
+    opacity: 0.2;
+  }
+}
+
+@keyframes diagonalSlideInBottom {
+  from {
+    transform: translate(300px, 300px) rotate(45deg);
+    opacity: 0;
+  }
+  to {
+    transform: translate(0, 0) rotate(45deg);
+    opacity: 0.2;
+  }
 }

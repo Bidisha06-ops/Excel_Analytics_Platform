@@ -1,153 +1,219 @@
-/* src/styles/dashboard.css */
-
-.dashboard-container {
-  max-width: 1000px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #222;
-}
-
-/* Heading */
-.dashboard-container > h1 {
-  margin-bottom: 1.5rem;
-  font-size: 2rem;
-  text-align: center;
-  color: #0d1b2a;
-}
-
-/* Stats box */
-.stats-box {
+.dashboard-wrapper {
+  height: 100vh;
+  padding: 30px;
+  font-family: 'Circe Contrast', sans-serif;
+  box-sizing: border-box;
+  /* Make wrapper a flex container with vertical layout so bottom panel can go below */
   display: flex;
-  justify-content: center;
-  margin-bottom: 2rem;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 0;
+  overflow: hidden;
 }
 
-.card {
-  background-color: #0d1b2a;
-  color: white;
-  padding: 1rem 2rem;
-  border-radius: 8px;
-  font-size: 1.25rem;
-  box-shadow: 0 4px 8px rgba(13, 27, 42, 0.2);
+/* Wrapper for top two columns */
+.top-columns {
+  display: flex;
+  gap: 20px;
+  flex: 1 1 auto; /* fill available height */
+  min-height: 0; /* prevent overflow */
+  overflow: hidden;
 }
 
-/* Activity summary */
-.activity-box {
-  margin-bottom: 2rem;
+/* LEFT COLUMN: Dashboard panel */
+.left-column {
+  flex: 0 0 580px; /* fixed width */
+  padding: 16px 20px;
+  margin: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgb(0 0 0 / 0.1);
+  flex-direction: column;
+  height: 100%;
+  gap: 16px; /* space between child sections */
 }
 
-.activity-box h2 {
-  margin-bottom: 0.75rem;
-  color: #0d1b2a;
+
+
+.quick-actions {
+  display: flex;
+  flex-direction: column; /* stack heading above buttons */
+  gap: 10px;
+  margin-top: 1rem;
 }
 
-.scroll-box {
-  max-height: 120px;
+.quick-actions h3 {
+  font-size: 16px;
+  margin: 0 0 10px 0; /* space below heading */
+  color: #0d1524;
+  font-weight: bolder;
+  white-space: nowrap;
+}
+
+.quick-actions .buttons-row {
+  display: flex;
+  gap: 10px;       /* space between buttons */
+}
+
+.quick-actions button {
+  flex: 1; /* equal width */
+  padding: 11px 1px;
+  background: #e0e0e0;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  color: #0d1524;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease, background-color 0.3s ease;
+  min-width: 120px;
+}
+
+.quick-actions button:hover {
+  background-color: #c7c7c7;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+
+
+
+/* RIGHT COLUMN: Activity Summary */
+.right-column {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-height: 100%;
+  overflow: hidden;;
+}
+
+/* Activity Summary */
+.activity-summary {
+  background: white;
+  padding: 20px 25px;
+  border-radius: 14px;
+  flex: 1 1 auto;
+  overflow: hidden;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 12px rgb(0 0 0 / 0.1);  
+  z-index: 1;
+  position: relative;
+}
+
+.activity-summary h3 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #0d1524;
+  flex-shrink: 0;
+  font-weight: bold;
+}
+
+.activity-list-scroll {
+  flex: 1 1 auto;
   overflow-y: auto;
-  padding: 1rem;
-  background-color: #f0f4f8;
-  border-radius: 6px;
   border: 1px solid #ddd;
-  color: #444;
+  padding: 12px;
+  border-radius: 9px;
+  background-color: #fafafa;
+}
+
+.activity-list-scroll ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  
+}
+
+.activity-list-scroll li {
+  font-size: 15px;
+  margin-bottom: 12px;
+  color:#0d1524;
   line-height: 1.4;
-  font-size: 1rem;
+  font-weight:550;
+  
 }
 
-/* Recent uploads table */
+/* BOTTOM PANEL: Full width below top columns */
+.bottom-panel {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  padding-top: 20px;
+  width: 100%; /* full width */
+  box-sizing: border-box;
+  flex-shrink: 0; /* prevent shrinking */
+}
+
+/* Recent uploads container */
+.recent-uploads-container {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  height: 320px;
+  flex: 1; /* take all available width */
+  box-sizing: border-box;
+  /* Removed margin-left: -32rem; */
+  box-shadow: 0 0 12px rgb(0 0 0 / 0.1);  
+  background-color: #ffffff; /* solid white */
+  z-index: 1;
+  position: relative;
+}
+
+.recent-uploads-container h3 {
+  margin: 0 0 15px 0;
+  flex-shrink: 0;
+  font-weight: bold;
+  
+}
+
+.recent-uploads-scroll {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  background-color: #fafafa;
+}
+
 .recent-uploads {
-  margin-bottom: 2rem;
-}
-
-.recent-uploads h2 {
-  margin-bottom: 0.75rem;
-  color: #0d1b2a;
+  width: 100%;
+  
 }
 
 .recent-uploads table {
   width: 100%;
   border-collapse: collapse;
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 6px;
-  overflow: hidden;
 }
 
 .recent-uploads th,
 .recent-uploads td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #ccc;
+  font-size: 15px;
   text-align: left;
-  padding: 12px 15px;
-  border-bottom: 1px solid #eee;
-  font-size: 1rem;
-  color: #333;
 }
 
-.recent-uploads th {
-  background-color: #0d1b2a;
-  color: white;
-  font-weight: 600;
-}
-
-.recent-uploads tr:hover {
-  background-color: #f9f9f9;
+.recent-uploads td:last-child {
+  text-align: center;
 }
 
 .recent-uploads button {
-  background-color: #0d1b2a;
-  color: white;
+  padding: 7px 14px;
   border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
+  background: #d1d1d1;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.2s ease;
+  font-weight: 600;
+  color: #0d1524;
+  transition: background 0.3s ease;
 }
 
 .recent-uploads button:hover {
-  background-color: #1b2a41;
-}
-
-/* Quick Actions */
-.quick-actions {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.quick-actions h2 {
-  margin-bottom: 1rem;
-  color: #0d1b2a;
-}
-
-.quick-actions button {
-  background-color: #0d1b2a;
-  color: white;
-  border: none;
-  margin: 0 0.75rem;
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.quick-actions button:hover {
-  background-color: #1b2a41;
-}
-
-/* Responsive tweaks */
-@media (max-width: 600px) {
-  .dashboard-container {
-    padding: 0 0.5rem;
-  }
-
-  .recent-uploads th,
-  .recent-uploads td {
-    padding: 10px 8px;
-    font-size: 0.9rem;
-  }
-
-  .quick-actions button {
-    margin: 0.5rem 0;
-    width: 100%;
-  }
+  background: #bdbdbd;
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react'; // make sure useRef is imported
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useParams } from 'react-router-dom';
@@ -46,43 +46,44 @@ const Analytics = () => {
   const hasLoggedAnalyze = useRef(false);
 
   useEffect(() => {
-    const fetchRecordAndLogAnalyze = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) throw new Error('No auth token found');
+  const fetchRecordAndLogAnalyze = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No auth token found');
 
-        const config = {
-          headers: { Authorization: `Bearer ${token}` },
-        };
+      const config = {
+        headers: { Authorization: `Bearer ${token}` },
+      };
 
-        const res = await axios.get(`http://localhost:8000/api/records/${id}`, config);
-        setRecord(res.data);
+      const res = await axios.get(`http://localhost:8000/api/records/${id}`, config);
+      setRecord(res.data);
 
-        if (res.data.data && res.data.data.length > 0) {
-          const keys = Object.keys(res.data.data[0]);
-          setColumns(keys);
-          setXColumn(keys[0]);
-          setYColumn(keys.length > 1 ? keys[1] : keys[0]);
-        }
-
-        if (!hasLoggedAnalyze.current) {
-          await axios.post(
-            `http://localhost:8000/api/activity/analyze/${id}`,
-            { filename: res.data.filename || 'unknown file' },
-            config
-          );
-          hasLoggedAnalyze.current = true;
-        }
-      } catch (error) {
-        console.error('Error fetching record or logging analyze activity:', error);
-        toast.error('Failed to load record or log activity');
-      } finally {
-        setLoading(false);
+      if (res.data.data && res.data.data.length > 0) {
+        const keys = Object.keys(res.data.data[0]);
+        setColumns(keys);
+        setXColumn(keys[0]);
+        setYColumn(keys.length > 1 ? keys[1] : keys[0]);
       }
-    };
 
-    fetchRecordAndLogAnalyze();
-  }, [id]);
+      if (!hasLoggedAnalyze.current) {
+        hasLoggedAnalyze.current = true; // set this FIRST to avoid race condition
+        await axios.post(
+          `http://localhost:8000/api/activity/analyze/${id}`,
+          { filename: res.data.filename || 'unknown file' },
+          config
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching record or logging analyze activity:', error);
+      toast.error('Failed to load record or log activity');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchRecordAndLogAnalyze();
+}, [id]);
+
 
   if (loading) return <p>Loading...</p>;
   if (!record) return <p>No record found.</p>;
