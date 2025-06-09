@@ -35,7 +35,6 @@ router.put("/profile/username", protect, async (req, res) => {
   }
 });
 
-
 // PUT /api/user/profile/image - Upload/Change Profile Image
 router.put("/profile/image", protect, upload.single("profileImage"), async (req, res) => {
   try {
@@ -53,9 +52,35 @@ router.put("/profile/image", protect, upload.single("profileImage"), async (req,
   }
 });
 
+
+
+
+
+
+
+
+
+
+
 // Admin-only route (example)
 router.get("/admin/dashboard", protect, adminOnly, (req, res) => {
   res.json({ success: true, message: "Welcome Admin!" });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 module.exports = router;

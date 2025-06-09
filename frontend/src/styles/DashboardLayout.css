@@ -57,20 +57,34 @@
 }
 
 .dashboardlayout-sidebar button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
   background: none;
   border: none;
-  color: #ffffff;
-  text-align: left;
-  padding: 10px;
+  color: white;
   font-size: 16px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  border-radius: 8px;
 }
 
 .dashboardlayout-sidebar button:hover {
-  background-color: #1b2a41;
-  border-radius: 5px;
+  background-color: #1b2b3c;
+  color: #00b4d8;
 }
+
+.logout-button {
+  margin-top: auto;
+  color: #ff6b6b;
+}
+
+.logout-button:hover {
+  background-color: #2d1b1b;
+  color: #ff8787;
+}
+
 
 /* Main content */
 .dashboardlayout-main {

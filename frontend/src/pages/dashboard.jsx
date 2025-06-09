@@ -10,22 +10,22 @@ const Dashboard = () => {
   const token = localStorage.getItem('token');
 
   // Max uploads goal for circle calculation
-  const maxUploadsGoal = 100;
+  const maxUploadsGoal = 1000;
 
   // Calculate circle progress percentage (cap at 100%)
-  const progressPercent = Math.min((uploads.length / maxUploadsGoal) * 100, 100);
+  const progressPercent = Math.min((uploads.length / maxUploadsGoal) * 1000, 1000);
 
   // Circle constants
   const radius = 50;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
+  const strokeDashoffset = circumference - (progressPercent / 1000) * circumference;
 
   // Function to determine stroke color based on upload percentage
   function getStrokeColor(percent) {
-    if (percent >= 75) return '#4CAF50'; // Green
-    if (percent >= 50) return '#FFC107'; // Yellow
-    if (percent >= 25) return '#FF9800'; // Orange
-    return '#F44336'; // Red
+    if (percent >= 750) return '#ff0000'; // Red
+    if (percent >= 500) return '#FF9800'; // Orange
+    if (percent >= 250) return '#FFC107'; // Yellow
+    return '#4CAF50'; // Green
   }
 
   const strokeColor = getStrokeColor(progressPercent);
@@ -80,6 +80,35 @@ const Dashboard = () => {
     navigate(`/dashboard/analytics/${uploadId}`);
   };
 
+
+  const [displayCount, setDisplayCount] = useState(0);
+
+// Animate when uploads length changes
+useEffect(() => {
+  let start = 0;
+  const end = uploads.length;
+  if (start === end) return;
+
+  const duration = 800; // Total animation time in ms
+  const incrementTime = 30; // How often the count updates
+  const steps = Math.ceil(duration / incrementTime); // ~27 steps
+  const increment = Math.ceil(end / steps); // How much to increase per step
+
+
+  const timer = setInterval(() => {
+    start += increment;
+    if (start >= end) {
+      setDisplayCount(end);
+      clearInterval(timer);
+    } else {
+      setDisplayCount(start);
+    }
+  }, incrementTime);
+
+  return () => clearInterval(timer);
+}, [uploads.length]);
+
+
   return (
     <div className="dashboard-wrapper">
       <div className="top-columns" style={{ display: 'flex', gap: '20px', flex: 1 }}>
@@ -98,7 +127,7 @@ const Dashboard = () => {
             {/* Total uploads text */}
             <div className="uploads-count" style={{ minWidth: '250px' }}>
               <p style={{ fontSize: '20px', fontWeight: 'bold', margin: 0 }}>Total Uploads</p>
-              <h1 style={{ fontSize: '40px', fontWeight: '900', margin: 0 }}>{uploads.length}</h1>
+              <h1 style={{ fontSize: '40px', fontWeight: '900', margin: 0 }}>{displayCount}</h1>
             </div>
 
             {/* Circle outside the total uploads box */}

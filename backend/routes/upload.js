@@ -33,6 +33,14 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
     const sheet = workbook.Sheets[sheetName];
     const jsonData = XLSX.utils.sheet_to_json(sheet);
 
+    // Calculate metadata
+    const numRows = jsonData.length;
+    const numCols = numRows > 0 ? Object.keys(jsonData[0]).length : 0;
+    const numSheets = workbook.SheetNames.length;
+    const emptyRows = jsonData.filter(row =>
+      Object.values(row).every(cell => cell === null || cell === '')
+    ).length;
+
     // Save Excel data to DB
     const newRecord = new ExcelRecord({
       filename: req.file.originalname,
@@ -51,10 +59,19 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
       timestamp: new Date(),
     });
 
+    
+    // Send back metadata in response
     res.status(200).json({
       success: true,
       message: 'File uploaded and saved successfully',
-      record: savedRecord,
+      record: {
+        _id: savedRecord._id,
+        filename: req.file.originalname,
+        numRows,
+        numCols,
+        numSheets,
+        emptyRows,
+      },
     });
   } catch (error) {
     console.error('Upload error:', error);

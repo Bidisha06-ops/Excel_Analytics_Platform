@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/DashboardLayout.css';
-import { LogOut } from 'lucide-react';
+import { LogOut, LayoutDashboard, UploadCloud, Activity, User } from 'lucide-react';
+
 
 const BACKEND_URL = 'http://localhost:8000';
 
@@ -64,21 +65,34 @@ const DashboardLayout = () => {
 
       <div className="dashboardlayout-body">
         <aside className="dashboardlayout-sidebar slide-left">
-          <button onClick={() => navigate('/dashboard')}>Dashboard</button>
-          <button onClick={() => navigate('/dashboard/upload')}>Upload File</button>
-          <button onClick={() => navigate('/dashboard/activity')}>Activity Log</button>
-          <button onClick={() => navigate('/dashboard/profile')}>Profile</button>
-          <button
-            className="logout-button"
-            onClick={() => {
-              localStorage.clear();
-              navigate('/login');
-            }}
-          >
-            <LogOut size={20} />
-            Logout
-          </button>
-        </aside>
+  <button onClick={() => navigate('/dashboard')}>
+    <LayoutDashboard size={18} style={{ marginRight: '8px' }} />
+    Dashboard
+  </button>
+  <button onClick={() => navigate('/dashboard/upload')}>
+    <UploadCloud size={18} style={{ marginRight: '8px' }} />
+    Upload File
+  </button>
+  <button onClick={() => navigate('/dashboard/activity')}>
+    <Activity size={18} style={{ marginRight: '8px' }} />
+    Activity Log
+  </button>
+  <button onClick={() => navigate('/dashboard/profile')}>
+    <User size={18} style={{ marginRight: '8px' }} />
+    Profile
+  </button>
+  <button
+    className="logout-button"
+    onClick={() => {
+      localStorage.clear();
+      navigate('/login');
+    }}
+  >
+    <LogOut size={18} style={{ marginRight: '8px' }} />
+    Logout
+  </button>
+</aside>
+
 
         <main className="dashboardlayout-main">
           <Outlet />
