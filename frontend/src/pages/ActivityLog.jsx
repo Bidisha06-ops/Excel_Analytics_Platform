@@ -17,19 +17,33 @@ function ActivityLog() {
   const fetchActivities = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:8000/api/records/myuploads', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const config = { headers: { Authorization: `Bearer ${token}` } };
 
-      const dataWithStatus = res.data.map((item) => ({
+      // Fetch both uploads and activity logs
+      const [recordsRes, activityRes] = await Promise.all([
+        axios.get('http://localhost:8000/api/records/myuploads', config),
+        axios.get('http://localhost:8000/api/activity/recent', config),
+      ]);
+
+      const uploads = recordsRes.data;
+
+      // Get all analyzed recordIds
+      const analyzedRecordIds = new Set(
+        activityRes.data
+          .filter(act => act.action === 'analyze' && act.recordId)
+          .map(act => act.recordId.toString())
+      );
+
+      // Mark uploads as Processed or Pending
+      const dataWithStatus = uploads.map(item => ({
         ...item,
-        status: item.analyzed ? 'Processed' : 'Pending',
+        status: analyzedRecordIds.has(item._id.toString()) ? 'Processed' : 'Pending',
       }));
 
       setActivities(dataWithStatus);
       setFilteredActivities(dataWithStatus);
     } catch (error) {
-      console.error('Error fetching activity log:', error);
+      console.error('❌ Error fetching activity log:', error);
     }
   };
 
@@ -64,16 +78,31 @@ function ActivityLog() {
   };
 
   const handleDelete = async (id) => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:8000/api/records/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      fetchActivities();
-    } catch (error) {
-      console.error('Error deleting file:', error);
+  const confirmDelete = window.confirm("Are you sure you want to delete this file?");
+  if (!confirmDelete) return;
+
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert("No auth token found. Please login again.");
+      return;
     }
-  };
+
+    const response = await axios.delete(`http://localhost:8000/api/records/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    console.log('Delete response:', response);
+
+    const updatedActivities = activities.filter(item => item._id !== id);
+    setActivities(updatedActivities);
+    setFilteredActivities(updatedActivities);
+  } catch (error) {
+    console.error('Error deleting file:', error.response || error.message || error);
+    alert("Failed to delete the file. Please try again.");
+  }
+};
+
 
   const startIndex = (currentPage - 1) * resultsPerPage;
   const currentActivities = filteredActivities.slice(startIndex, startIndex + resultsPerPage);
@@ -128,10 +157,16 @@ function ActivityLog() {
                   {item.status}
                 </td>
                 <td>
-                  <button onClick={() => navigate(`/dashboard/analytics/${item._id}`)} className="view-btn">
+                  <button
+                    onClick={() => navigate(`/dashboard/analytics/${item._id}`)}
+                    className="view-btn"
+                  >
                     <FileBarChart2 size={18} color="green" />
                   </button>
-                  <button onClick={() => handleDelete(item._id)} className="delete-btn">
+                  <button
+                    onClick={() => handleDelete(item._id)}
+                    className="delete-btn"
+                  >
                     <Trash2 size={18} color="red" />
                   </button>
                 </td>

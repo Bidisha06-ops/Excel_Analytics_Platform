@@ -192,9 +192,10 @@ useEffect(() => {
                         {log.action === 'upload' && `Uploaded ${log.filename}`}
                         {log.action === 'analyze' && `Analyzed ${log.filename}`}
                         {log.action === 'export' && `Exported report of ${log.filename}`}
+                        {log.action === 'delete' && `Deleted ${log.filename}`}
                         {log.action === 'update-profile' && 'Changed username'}
                         {log.action === 'update-photo' && 'Updated profile photo'}
-                        {!['upload', 'analyze', 'export', 'update-profile', 'update-photo'].includes(log.action) &&
+                        {!['upload', 'analyze', 'export', 'update-profile', 'update-photo','delete'].includes(log.action) &&
                           `${log.action} performed`}
                         {' '}on {new Date(log.timestamp).toLocaleString()}
                       </li>

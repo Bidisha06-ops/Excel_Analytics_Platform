@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Activity = require('../models/Activity');
 const { protect } = require('../middleware/auth');
+const mongoose = require('mongoose');
 
 // GET /api/activity/recent
 // GET /api/activity/recent (now returns all logs for the user)
@@ -40,6 +41,20 @@ router.post('/analyze/:id', protect, async (req, res) => {
 });
 
 
+router.get('/test-activity-log', protect, async (req, res) => {
+  try {
+    const log = await Activity.create({
+      userId: req.user.id,
+      action: 'delete', // ✅ should match enum
+      filename: 'test.xlsx',
+      recordId: new mongoose.Types.ObjectId(), // dummy ObjectId
+    });
+    res.json({ success: true, log });
+  } catch (err) {
+    console.error('❌ Activity log test failed:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 
 module.exports = router;
