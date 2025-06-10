@@ -107,95 +107,131 @@ function ActivityLog() {
   const startIndex = (currentPage - 1) * resultsPerPage;
   const currentActivities = filteredActivities.slice(startIndex, startIndex + resultsPerPage);
   const totalPages = Math.ceil(filteredActivities.length / resultsPerPage);
-
+  
   return (
-    <div className="activitylog-container">
-      <h2>Activity Log</h2>
-      <div className="filters">
-        <input
-          type="text"
-          placeholder="Search filename..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <input
-          type="date"
-          value={dateRange.start}
-          onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-        />
-        <input
-          type="date"
-          value={dateRange.end}
-          onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-        />
-        <select
-          value={resultsPerPage}
-          onChange={(e) => setResultsPerPage(parseInt(e.target.value))}
-        >
-          <option value="3">3</option>
-          <option value="6">6</option>
-          <option value="9">9</option>
-        </select>
-      </div>
+  <div className="activitylog-container">
+    <h2>Activity Log</h2>
 
-      <table className="activity-table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>File Name</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentActivities.length > 0 ? (
-            currentActivities.map(item => (
-              <tr key={item._id}>
-                <td>{new Date(item.uploadedAt).toLocaleDateString()}</td>
-                <td>{item.filename}</td>
-                <td className={item.status === 'Processed' ? 'status-processed' : 'status-pending'}>
-                  {item.status}
-                </td>
-                <td>
-                  <button
-                    onClick={() => navigate(`/dashboard/analytics/${item._id}`)}
-                    className="view-btn"
-                  >
-                    <FileBarChart2 size={18} color="green" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(item._id)}
-                    className="delete-btn"
-                  >
-                    <Trash2 size={18} color="red" />
-                  </button>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="4">No activities found.</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+    <div className="filters">
+      <input
+        type="text"
+        placeholder="Search filename..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+      <input
+        type="date"
+        value={dateRange.start}
+        onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+      />
+      <input
+        type="date"
+        value={dateRange.end}
+        onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+      />
+      <div className="results-filter">
+  <label htmlFor="resultsPerPage">Show Results</label>
+  <select
+    id="resultsPerPage"
+    value={resultsPerPage}
+    onChange={(e) => setResultsPerPage(parseInt(e.target.value))}
+  >
+    <option value="3">3</option>
+    <option value="6">6</option>
+    <option value="9">9</option>
+  </select>
+</div>
 
-      <div className="pagination-info">
-        Showing {currentActivities.length} of {filteredActivities.length}
-      </div>
-      <div className="pagination-buttons">
-        {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((page) => (
-          <button
-            key={page}
-            className={page === currentPage ? 'active-page' : ''}
-            onClick={() => setCurrentPage(page)}
-          >
-            {page}
-          </button>
-        ))}
-      </div>
     </div>
-  );
+
+    <table className="activity-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>File Name</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {currentActivities.length > 0 ? (
+          currentActivities.map(item => (
+            <tr key={item._id}>
+              <td>{new Date(item.uploadedAt).toLocaleDateString()}</td>
+              <td>{item.filename}</td>
+              <td className={item.status === 'Processed' ? 'status-processed' : 'status-pending'}>
+                {item.status}
+              </td>
+              <td>
+                <button
+                  onClick={() => navigate(`/dashboard/analytics/${item._id}`)}
+                  className="view-btn"
+                >
+                  <FileBarChart2 size={18} color="green" />
+                </button>
+                <button
+                  onClick={() => handleDelete(item._id)}
+                  className="delete-btn"
+                >
+                  <Trash2 size={18} color="red" />
+                </button>
+              </td>
+            </tr>
+          ))
+        ) : (
+          <tr>
+            <td colSpan="4">No activities found.</td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+
+<div className="pagination-container">
+  {/* Pagination Info - left aligned */}
+  <div className="pagination-info">
+    Showing {currentActivities.length} of {filteredActivities.length}
+  </div>
+
+  {/* Pagination Buttons - right aligned */}
+  <div className="pagination-wrapper">
+    <button
+      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+      disabled={currentPage === 1}
+      className="pagination-nav"
+    ><b>
+      Previous</b>
+    </button>
+
+    {Array.from({ length: 3 }, (_, i) => {
+      const page = currentPage - 1 + i;
+      const label = page === 0 ? '0' : String(page).padStart(2, '0');
+      if (page > totalPages) return null;
+
+      return (
+        <button
+          key={page}
+          className={`pagination-btn ${page === currentPage ? 'active' : ''}`}
+          onClick={() => page > 0 && setCurrentPage(page)}
+          disabled={page === 0}
+        >
+          {label}
+        </button>
+      );
+    })}
+
+    <button
+      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+      disabled={currentPage === totalPages}
+      className="pagination-nav"
+    ><b>
+      Next</b>
+    </button>
+  </div>
+</div>
+
+  </div>
+);
+
 }
 
 export default ActivityLog;
