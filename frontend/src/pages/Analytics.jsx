@@ -1,8 +1,11 @@
-import React, { useEffect, useState, useRef } from 'react'; // make sure useRef is imported
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useParams } from 'react-router-dom';
 import '../styles/analytics.css';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -42,48 +45,47 @@ const Analytics = () => {
   const [xColumn, setXColumn] = useState('');
   const [yColumn, setYColumn] = useState('');
   const [chartType, setChartType] = useState('bar');
-
+  const chartRef = useRef(null);
   const hasLoggedAnalyze = useRef(false);
 
   useEffect(() => {
-  const fetchRecordAndLogAnalyze = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('No auth token found');
+    const fetchRecordAndLogAnalyze = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No auth token found');
 
-      const config = {
-        headers: { Authorization: `Bearer ${token}` },
-      };
+        const config = {
+          headers: { Authorization: `Bearer ${token}` },
+        };
 
-      const res = await axios.get(`http://localhost:8000/api/records/${id}`, config);
-      setRecord(res.data);
+        const res = await axios.get(`http://localhost:8000/api/records/${id}`, config);
+        setRecord(res.data);
 
-      if (res.data.data && res.data.data.length > 0) {
-        const keys = Object.keys(res.data.data[0]);
-        setColumns(keys);
-        setXColumn(keys[0]);
-        setYColumn(keys.length > 1 ? keys[1] : keys[0]);
+        if (res.data.data && res.data.data.length > 0) {
+          const keys = Object.keys(res.data.data[0]);
+          setColumns(keys);
+          setXColumn(keys[0]);
+          setYColumn(keys.length > 1 ? keys[1] : keys[0]);
+        }
+
+        if (!hasLoggedAnalyze.current) {
+          hasLoggedAnalyze.current = true;
+          await axios.post(
+            `http://localhost:8000/api/activity/analyze/${id}`,
+            { filename: res.data.filename || 'unknown file' },
+            config
+          );
+        }
+      } catch (error) {
+        console.error('Error fetching record or logging analyze activity:', error);
+        toast.error('Failed to load record or log activity');
+      } finally {
+        setLoading(false);
       }
+    };
 
-      if (!hasLoggedAnalyze.current) {
-        hasLoggedAnalyze.current = true; // set this FIRST to avoid race condition
-        await axios.post(
-          `http://localhost:8000/api/activity/analyze/${id}`,
-          { filename: res.data.filename || 'unknown file' },
-          config
-        );
-      }
-    } catch (error) {
-      console.error('Error fetching record or logging analyze activity:', error);
-      toast.error('Failed to load record or log activity');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchRecordAndLogAnalyze();
-}, [id]);
-
+    fetchRecordAndLogAnalyze();
+  }, [id]);
 
   if (loading) return <p>Loading...</p>;
   if (!record) return <p>No record found.</p>;
@@ -101,26 +103,19 @@ const Analytics = () => {
     return 0;
   });
 
-  const chartData = {
-    labels,
-    datasets: [
-      {
-        label: yColumn,
-        data: dataValues,
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.6)',
-          'rgba(54, 162, 235, 0.6)',
-          'rgba(255, 206, 86, 0.6)',
-          'rgba(75, 192, 192, 0.6)',
-          'rgba(153, 102, 255, 0.6)',
-          'rgba(255, 159, 64, 0.6)',
-        ],
-        borderColor: 'rgba(0,0,0,0.1)',
-        borderWidth: 1,
-        fill: chartType === 'line' || chartType === 'radar',
-      },
-    ],
-  };
+const chartData = {
+  labels,
+  datasets: [
+    {
+      label: yColumn,
+      data: dataValues,
+      backgroundColor: 'rgba(54, 162, 235, 0.6)', // just one color
+      borderColor: 'rgba(0, 0, 0, 0.1)',
+      borderWidth: 1,
+      fill: chartType === 'line' || chartType === 'radar',
+    },
+  ],
+};
 
   const options = {
     responsive: true,
@@ -134,33 +129,70 @@ const Analytics = () => {
   };
 
   const renderChart = () => {
+    const commonProps = { data: chartData, options };
     switch (chartType) {
       case 'line':
-        return <Line data={chartData} options={options} />;
+        return <Line {...commonProps} ref={chartRef} />;
       case 'pie':
-        return <Pie data={chartData} options={options} />;
+        return <Pie {...commonProps} ref={chartRef} />;
       case 'doughnut':
-        return <Doughnut data={chartData} options={options} />;
+        return <Doughnut {...commonProps} ref={chartRef} />;
       case 'radar':
-        return <Radar data={chartData} options={options} />;
+        return <Radar {...commonProps} ref={chartRef} />;
       case 'bar':
       default:
-        return <Bar data={chartData} options={options} />;
+        return <Bar {...commonProps} ref={chartRef} />;
     }
   };
 
-  return (
-    <div className="analytics-container">
-      <div style={{ maxWidth: 900, margin: 'auto', padding: 20 }}>
-        <h2>Analytics for: {record.filename || 'Uploaded File'}</h2>
+  const downloadAsPNG = () => {
+    const chartInstance = chartRef.current;
+    if (!chartInstance || !chartInstance.canvas) {
+      toast.error('Chart not available');
+      return;
+    }
 
-        <div style={{ marginBottom: 16 }}>
-          <label htmlFor="x-column-select">Select X-axis Column: </label>
+    const link = document.createElement('a');
+    link.href = chartInstance.canvas.toDataURL('image/png');
+    link.download = `chart-${chartType}.png`;
+    link.click();
+  };
+
+  const downloadAsPDF = async () => {
+    const chartInstance = chartRef.current;
+    if (!chartInstance || !chartInstance.canvas) {
+      toast.error('Chart not available');
+      return;
+    }
+
+    const canvas = await html2canvas(chartInstance.canvas);
+    const imgData = canvas.toDataURL('image/png');
+
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'px',
+      format: [canvas.width, canvas.height],
+    });
+
+    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+    pdf.save(`chart-${chartType}.pdf`);
+  };
+
+
+return (
+  <div className="analytics-container">
+    <h2 className="analytics-header">
+      Analytics for: {record.filename || 'Uploaded File'}
+    </h2>
+
+    <div className="analytics-body">
+      <div className="sidebar-controls">
+        <div>
+          <label htmlFor="x-column-select">X-Axis:</label>
           <select
             id="x-column-select"
             value={xColumn}
             onChange={e => setXColumn(e.target.value)}
-            style={{ marginRight: 16 }}
           >
             {columns.map(col => (
               <option key={col} value={col}>
@@ -168,13 +200,14 @@ const Analytics = () => {
               </option>
             ))}
           </select>
+        </div>
 
-          <label htmlFor="y-column-select">Select Y-axis Column: </label>
+        <div>
+          <label htmlFor="y-column-select">Y-Axis:</label>
           <select
             id="y-column-select"
             value={yColumn}
             onChange={e => setYColumn(e.target.value)}
-            style={{ marginRight: 16 }}
           >
             {columns.map(col => (
               <option key={col} value={col}>
@@ -182,8 +215,10 @@ const Analytics = () => {
               </option>
             ))}
           </select>
+        </div>
 
-          <label htmlFor="chart-type-select">Select Chart Type: </label>
+        <div>
+          <label htmlFor="chart-type-select">Chart Type:</label>
           <select
             id="chart-type-select"
             value={chartType}
@@ -196,37 +231,46 @@ const Analytics = () => {
             <option value="radar">Radar</option>
           </select>
         </div>
+
+        <div className="download-buttons">
+          <button onClick={downloadAsPNG}>Download as PNG</button>
+          <button onClick={downloadAsPDF}>Download as PDF</button>
+        </div>
       </div>
 
-      <div className="chart-wrapper">{renderChart()}</div>
-
-      <div className="data-preview">
-        <h3>Data Preview (First 5 Rows)</h3>
-        <table>
-          <thead>
-            <tr>
-              {columns.map(col => (
-                <th key={col}>{col}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {record.data.slice(0, 5).map((row, idx) => (
-              <tr key={idx}>
-                {columns.map(col => (
-                  <td key={col}>
-                    {row[col] !== undefined && row[col] !== null
-                      ? row[col].toString()
-                      : ''}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="chart-display">
+        {renderChart()}
       </div>
     </div>
-  );
+
+    <div className="data-preview">
+      <h3>Data Preview (First 5 Rows)</h3>
+      <table>
+        <thead>
+          <tr>
+            {columns.map(col => (
+              <th key={col}>{col}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {record.data.slice(0, 5).map((row, idx) => (
+            <tr key={idx}>
+              {columns.map(col => (
+                <td key={col}>
+                  {row[col] !== undefined && row[col] !== null
+                    ? row[col].toString()
+                    : ''}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+);
+
 };
 
 export default Analytics;
