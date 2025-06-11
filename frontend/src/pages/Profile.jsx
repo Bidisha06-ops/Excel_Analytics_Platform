@@ -1,15 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import '../styles/profile.css';
-import {
-  User,
-  Mail,
-  BadgeCheck,
-  Calendar,
-  UploadCloud,
-  Save,
-} from 'lucide-react';
-import { motion } from 'framer-motion'; // ✅ Animation import
+import { UploadCloud, Save } from 'lucide-react';
 
 function Profile() {
   const [user, setUser] = useState(null);
@@ -39,7 +31,7 @@ function Profile() {
     const file = e.target.files[0];
     if (!file) return;
     setSelectedFile(file);
-    setProfileImage(URL.createObjectURL(file)); // Preview
+    setProfileImage(URL.createObjectURL(file));
   };
 
   const handleProfileUpdate = async () => {
@@ -47,7 +39,6 @@ function Profile() {
     setMessage('');
     try {
       const token = localStorage.getItem('token');
-
       await axios.put(
         'http://localhost:8000/api/user/profile/username',
         { username: editName },
@@ -83,78 +74,52 @@ function Profile() {
   };
 
   return (
-    <motion.div
-      className="profile-container"
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: 'easeOut' }}
-    >
-      <h2>User Profile</h2>
-      {message && (
-        <p className={`message ${message.includes('Failed') ? 'error' : ''}`}>
-          {message}
-        </p>
-      )}
-
-      {user ? (
-        <div className="profile-card">
-          <div className="profile-image">
+    <div className="profile-wrapper">
+      <div className="profile-container">
+        <div className="profile-left">
+          <div className="avatar-container">
             <img
               src={
-                user.profileImage
+                user?.profileImage
                   ? `http://localhost:8000${user.profileImage}`
-                  : profileImage || '../images/avatar.png'
+                  : profileImage || '/images/avatar.png'
               }
               alt="Profile"
+              className="profile-avatar"
             />
-            <label className="upload-label">
-              <UploadCloud size={16} />
-              <span>Upload Image</span>
+            <label className="upload-button">
+              <UploadCloud size={16} /> Upload
               <input type="file" accept="image/*" onChange={handleImageChange} hidden />
             </label>
           </div>
+          <p className="joined-date">Joined: {user ? new Date(user.createdAt).toLocaleDateString() : ''}</p>
+        </div>
 
-          <div className="profile-field">
-            <User size={16} />
-            <label>Name:</label>
-            <input
-              type="text"
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-            />
+        <div className="profile-right">
+          <h2 className="profile-title">Profile Page</h2>
+          {message && <div className={`status-message ${message.includes('Failed') ? 'error' : ''}`}>{message}</div>}
+
+          <div className="form-group">
+            <label>Username</label>
+            <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} />
           </div>
 
-          <div className="profile-field">
-            <Mail size={16} />
-            <label>Email:</label>
-            <span>{user.email}</span>
+          <div className="form-group">
+            <label>Email</label>
+            <input type="text" value={user?.email} disabled />
           </div>
 
-          <div className="profile-field">
-            <BadgeCheck size={16} />
-            <label>Role:</label>
-            <span>{user.role}</span>
+          <div className="form-group">
+            <label>Role</label>
+            <input type="text" value={user?.role} disabled />
           </div>
 
-          <div className="profile-field">
-            <Calendar size={16} />
-            <label>Joined:</label>
-            <span>{new Date(user.createdAt).toLocaleDateString()}</span>
-          </div>
-
-          <button
-            className="update-button"
-            onClick={handleProfileUpdate}
-            disabled={loading}
-          >
-            <Save size={16} style={{ marginRight: '5px' }} />
-            {loading ? 'Updating...' : 'Update Profile'}
+          <button className="update-button" onClick={handleProfileUpdate} disabled={loading}>
+            <Save size={16} /> {loading ? 'Updating...' : 'Update Profile'}
           </button>
         </div>
-      ) : (
-        <p>Loading profile...</p>
-      )}
-    </motion.div>
+      </div>
+    </div>
   );
 }
 
