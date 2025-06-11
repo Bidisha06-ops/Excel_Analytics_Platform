@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import '../styles/profile.css';
+import { UploadCloud, Save } from 'lucide-react';
 
 function Profile() {
   const [user, setUser] = useState(null);
   const [editName, setEditName] = useState('');
   const [profileImage, setProfileImage] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -21,11 +24,19 @@ function Profile() {
         console.error('Error fetching user profile:', error);
       }
     };
-
     fetchProfile();
   }, []);
 
-  const handleNameChange = async () => {
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setSelectedFile(file);
+    setProfileImage(URL.createObjectURL(file));
+  };
+
+  const handleProfileUpdate = async () => {
+    setLoading(true);
+    setMessage('');
     try {
       const token = localStorage.getItem('token');
       await axios.put(
@@ -33,85 +44,81 @@ function Profile() {
         { username: editName },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setUser((prev) => ({ ...prev, username: editName }));
-      setMessage('Name updated successfully.');
+
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('profileImage', selectedFile);
+
+        const imgRes = await axios.put(
+          'http://localhost:8000/api/user/profile/image',
+          formData,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        setUser((prev) => ({
+          ...prev,
+          username: editName,
+          profileImage: imgRes.data.imagePath,
+        }));
+      } else {
+        setUser((prev) => ({ ...prev, username: editName }));
+      }
+
+      setMessage('Profile updated successfully.');
     } catch (err) {
       console.error(err);
-      setMessage('Failed to update name.');
-    }
-  };
-
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setProfileImage(URL.createObjectURL(file)); // Preview
-
-    const formData = new FormData();
-    formData.append('profileImage', file); // Key must match backend multer field name
-
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.put('http://localhost:8000/api/user/profile/image', formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setUser((prev) => ({ ...prev, profileImage: res.data.imagePath })); // use imagePath from backend
-      setMessage('Profile image updated.');
-    } catch (err) {
-      console.error(err);
-      setMessage('Failed to upload image.');
+      setMessage('Failed to update profile.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="profile-container">
-      <h2>User Profile</h2>
-      {message && <p className="message">{message}</p>}
-
-      {user ? (
-        <div className="profile-card">
-          <div className="profile-image">
+    <div className="profile-wrapper">
+      <div className="profile-container">
+        <div className="profile-left">
+          <div className="avatar-container">
             <img
               src={
-                user.profileImage
+                user?.profileImage
                   ? `http://localhost:8000${user.profileImage}`
-                  : profileImage || '../images/avatar.png'
+                  : profileImage || '/images/avatar.png'
               }
               alt="Profile"
-              height="100"
+              className="profile-avatar"
             />
-            <input type="file" accept="image/*" onChange={handleImageUpload} />
+            <label className="upload-button">
+              <UploadCloud size={16} /> Upload
+              <input type="file" accept="image/*" onChange={handleImageChange} hidden />
+            </label>
           </div>
-
-          <div className="profile-field">
-            <label>Name:</label>
-            <input
-              type="text"
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-            />
-            <button onClick={handleNameChange}>Update Name</button>
-          </div>
-
-          <div className="profile-field">
-            <label>Email:</label>
-            <span>{user.email}</span>
-          </div>
-
-          <div className="profile-field">
-            <label>Role:</label>
-            <span>{user.role}</span>
-          </div>
-
-          <div className="profile-field">
-            <label>Joined:</label>
-            <span>{new Date(user.createdAt).toLocaleDateString()}</span>
-          </div>
+          <p className="joined-date">Joined: {user ? new Date(user.createdAt).toLocaleDateString() : ''}</p>
         </div>
-      ) : (
-        <p>Loading profile...</p>
-      )}
+
+        <div className="profile-right">
+          <h2 className="profile-title">Profile Page</h2>
+          {message && <div className={`status-message ${message.includes('Failed') ? 'error' : ''}`}>{message}</div>}
+
+          <div className="form-group">
+            <label>Username</label>
+            <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} />
+          </div>
+
+          <div className="form-group">
+            <label>Email</label>
+            <input type="text" value={user?.email} disabled />
+          </div>
+
+          <div className="form-group">
+            <label>Role</label>
+            <input type="text" value={user?.role} disabled />
+          </div>
+
+          <button className="update-button" onClick={handleProfileUpdate} disabled={loading}>
+            <Save size={16} /> {loading ? 'Updating...' : 'Update Profile'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
