@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import '../styles/profile.css';
-import { UploadCloud, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 function Profile() {
   const [user, setUser] = useState(null);
   const [editName, setEditName] = useState('');
   const [profileImage, setProfileImage] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -19,9 +19,12 @@ function Profile() {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(res.data.user);
-        setEditName(res.data.user.username);
+        setEditName(res.data.user.username || '');
+        setProfileImage(null);
+        setSelectedFile(null);
       } catch (error) {
         console.error('Error fetching user profile:', error);
+        toast.error('Failed to fetch profile.');
       }
     };
     fetchProfile();
@@ -34,16 +37,32 @@ function Profile() {
     setProfileImage(URL.createObjectURL(file));
   };
 
+  const isDirty = () => {
+    if (!user) return false;
+    return (
+      editName.trim() !== (user.username || '').trim() ||
+      selectedFile !== null
+    );
+  };
+
   const handleProfileUpdate = async () => {
+    if (!editName.trim()) {
+      toast.error('Username cannot be empty.');
+      return;
+    }
+
     setLoading(true);
-    setMessage('');
+
     try {
       const token = localStorage.getItem('token');
-      await axios.put(
-        'http://localhost:8000/api/user/profile/username',
-        { username: editName },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+
+      if (editName !== user.username) {
+        await axios.put(
+          'http://localhost:8000/api/user/profile/username',
+          { username: editName },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
 
       if (selectedFile) {
         const formData = new FormData();
@@ -52,7 +71,11 @@ function Profile() {
         const imgRes = await axios.put(
           'http://localhost:8000/api/user/profile/image',
           formData,
-          { headers: { Authorization: `Bearer ${token}` } }
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
 
         setUser((prev) => ({
@@ -60,14 +83,17 @@ function Profile() {
           username: editName,
           profileImage: imgRes.data.imagePath,
         }));
+
+        setSelectedFile(null);
+        setProfileImage(null);
       } else {
         setUser((prev) => ({ ...prev, username: editName }));
       }
 
-      setMessage('Profile updated successfully.');
+      toast.success('Profile updated successfully.');
     } catch (err) {
       console.error(err);
-      setMessage('Failed to update profile.');
+      toast.error('Failed to update profile.');
     } finally {
       setLoading(false);
     }
@@ -80,43 +106,68 @@ function Profile() {
           <div className="avatar-container">
             <img
               src={
-                user?.profileImage
+                profileImage ||
+                (user?.profileImage
                   ? `http://localhost:8000${user.profileImage}`
-                  : profileImage || '/images/avatar.png'
+                  : '/images/avatar.png')
               }
               alt="Profile"
               className="profile-avatar"
             />
-            <label className="upload-button">
-              <UploadCloud size={16} /> Upload
-              <input type="file" accept="image/*" onChange={handleImageChange} hidden />
+            <label
+              className="upload-icon-button"
+              aria-label="Upload profile image"
+              tabIndex={0}
+            >
+              +
+              <input
+                type="file"
+                name="profileImage"
+                accept="image/*"
+                onChange={handleImageChange}
+                hidden
+                aria-hidden="true"
+              />
             </label>
           </div>
-          <p className="joined-date">Joined: {user ? new Date(user.createdAt).toLocaleDateString() : ''}</p>
+          <p className="joined-date">
+            Joined: {user ? new Date(user.createdAt).toLocaleDateString() : ''}
+          </p>
         </div>
 
         <div className="profile-right">
           <h2 className="profile-title">Profile Page</h2>
-          {message && <div className={`status-message ${message.includes('Failed') ? 'error' : ''}`}>{message}</div>}
 
           <div className="form-group">
-            <label>Username</label>
-            <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} />
+            <label htmlFor="username-input">Username</label>
+            <input
+              id="username-input"
+              type="text"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              autoComplete="username"
+            />
           </div>
 
           <div className="form-group">
             <label>Email</label>
-            <input type="text" value={user?.email} disabled />
+            <input type="text" value={user?.email || ''} disabled />
           </div>
 
           <div className="form-group">
             <label>Role</label>
-            <input type="text" value={user?.role} disabled />
+            <input type="text" value={user?.role || ''} disabled />
           </div>
 
-          <button className="update-button" onClick={handleProfileUpdate} disabled={loading}>
-            <Save size={16} /> {loading ? 'Updating...' : 'Update Profile'}
-          </button>
+          {isDirty() && (
+            <button
+              className="update-button"
+              onClick={handleProfileUpdate}
+              disabled={loading}
+            >
+              <Save size={16} /> {loading ? 'Updating...' : 'Update Profile'}
+            </button>
+          )}
         </div>
       </div>
     </div>
