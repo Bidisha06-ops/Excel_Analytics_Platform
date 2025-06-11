@@ -1,10 +1,14 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef} from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useParams } from 'react-router-dom';
 import '../styles/analytics.css';
+import { LineChart, Line as ReLine, ResponsiveContainer, XAxis, YAxis,} from 'recharts';
+import { Bar, Line} from 'react-chartjs-2';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { Chart,registerables  } from 'chart.js/auto';
+
 
 import {
   Chart as ChartJS,
@@ -20,8 +24,6 @@ import {
   RadialLinearScale,
   Filler,
 } from 'chart.js';
-
-import { Bar, Line, Pie, Doughnut, Radar } from 'react-chartjs-2';
 
 ChartJS.register(
   CategoryScale,
@@ -103,92 +105,277 @@ const Analytics = () => {
     return 0;
   });
 
-const chartData = {
-  labels,
-  datasets: [
-    {
-      label: yColumn,
-      data: dataValues,
-      backgroundColor: 'rgba(54, 162, 235, 0.6)', // just one color
-      borderColor: 'rgba(0, 0, 0, 0.1)',
-      borderWidth: 1,
-      fill: chartType === 'line' || chartType === 'radar',
-    },
-  ],
-};
+  const colorPalette = ['#FF6384', '#36A2EB', '#4CAF50']; // red, blue, green
+
+  const chartData = {
+    labels,
+    datasets: [
+      {
+        label: yColumn,
+        data: dataValues,
+        backgroundColor: labels.map((_, idx) => colorPalette[idx % colorPalette.length]),
+        borderColor: 'rgba(0, 0, 0, 0.2)',
+        borderWidth: 2,
+        fill: chartType === 'line' || chartType === 'radar',
+        tension: 0.4,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        borderRadius: chartType === 'bar' ? 8 : 0,
+      },
+    ],
+  };
 
   const options = {
     responsive: true,
     plugins: {
-      legend: { position: 'top' },
+      legend: {
+        position: 'bottom',
+        labels: {
+          color: '#333',
+          font: {
+            size: 14,
+            family: 'Poppins',
+            weight: 'bold',
+          },
+        },
+      },
       title: {
         display: true,
         text: `Chart (${chartType.toUpperCase()}) of ${yColumn} vs ${xColumn}`,
+        color: '#111',
+        font: {
+          size: 18,
+          family: 'Poppins',
+          weight: '600',
+        },
+        padding: { top: 10, bottom: 20 },
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0,0,0,0.8)',
+        padding: 10,
+        cornerRadius: 4,
+      },
+    },
+    scales: {
+      x: {
+        ticks: {
+          color: '#444',
+          font: { size: 12 },
+        },
+        grid: {
+          color: '#eee',
+          borderDash: [4, 4],
+        },
+      },
+      y: {
+        ticks: {
+          color: '#444',
+          font: { size: 12 },
+        },
+        grid: {
+          color: '#eee',
+          borderDash: [4, 4],
+        },
       },
     },
   };
 
-  const renderChart = () => {
-    const commonProps = { data: chartData, options };
-    switch (chartType) {
-      case 'line':
-        return <Line {...commonProps} ref={chartRef} />;
-      case 'pie':
-        return <Pie {...commonProps} ref={chartRef} />;
-      case 'doughnut':
-        return <Doughnut {...commonProps} ref={chartRef} />;
-      case 'radar':
-        return <Radar {...commonProps} ref={chartRef} />;
-      case 'bar':
-      default:
-        return <Bar {...commonProps} ref={chartRef} />;
-    }
-  };
+const renderChart = () => {
+  const commonProps = { data: chartData, options };
 
-  const downloadAsPNG = () => {
-    const chartInstance = chartRef.current;
-    if (!chartInstance || !chartInstance.canvas) {
-      toast.error('Chart not available');
-      return;
+  switch (chartType) {
+    case 'line':
+      return <Line {...commonProps} ref={chartRef} />;
+
+    case 'bar':
+      return <Bar {...commonProps} ref={chartRef} />;
+
+    case 'horizontalBar': {
+      const horizontalOptions = {
+        ...options,
+        indexAxis: 'y',
+      };
+      return <Bar data={chartData} options={horizontalOptions} ref={chartRef} />;
     }
+
+    case 'area': {
+      const areaOptions = {
+        ...options,
+        plugins: {
+          ...options.plugins,
+        },
+        elements: {
+          line: { fill: true },
+        },
+      };
+      return <Line data={chartData} options={areaOptions} ref={chartRef} />;
+    }
+
+    case 'sparkline': {
+      const sparklineData = chartData.datasets[0].data.map((value, index) => ({
+        label: labels[index],
+        value,
+      }));
+
+      return (
+        <div style={{ width: '100%', height: 200 }} ref={chartRef}>
+          <ResponsiveContainer>
+            <LineChart data={sparklineData}>
+              <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} />
+              <ReLine
+                type="monotone"
+                dataKey="value"
+                stroke="#36A2EB"
+                strokeWidth={2}
+                dot={{ r: 3 }}
+                isAnimationActive={true}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#333',
+                  border: 'none',
+                  borderRadius: 4,
+                  color: '#fff',
+                  fontSize: 12,
+                  padding: 8,
+                }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      );
+    }
+
+    default:
+      return <Bar {...commonProps} ref={chartRef} />;
+  }
+};
+
+
+const downloadAsPNG = async () => {
+  let targetNode;
+
+  // Prefer Chart.js canvas if available
+  if (chartRef.current?.canvas) {
+    targetNode = chartRef.current.canvas;
+  } else {
+    // Fallback for Recharts (e.g., sparkline)
+    targetNode = document.querySelector('.chart-wrapper');
+  }
+
+  if (!targetNode) {
+    toast.error('Chart not available');
+    return;
+  }
+
+  try {
+    const canvas = await html2canvas(targetNode);
+    const image = canvas.toDataURL('image/png');
 
     const link = document.createElement('a');
-    link.href = chartInstance.canvas.toDataURL('image/png');
+    link.href = image;
     link.download = `chart-${chartType}.png`;
     link.click();
-  };
+  } catch (err) {
+    toast.error('Failed to download PNG');
+    console.error('PNG Download Error:', err);
+  }
+};
 
-  const downloadAsPDF = async () => {
-    const chartInstance = chartRef.current;
-    if (!chartInstance || !chartInstance.canvas) {
-      toast.error('Chart not available');
-      return;
-    }
 
-    const canvas = await html2canvas(chartInstance.canvas);
+Chart.register(...registerables); // Required
+
+const exportAllChartsAsPDF = async () => {
+  const pdf = new jsPDF('landscape', 'px', 'a4');
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 30;
+  let yOffset = margin;
+
+  const chartTypes = ['bar', 'line', 'horizontalBar'];
+
+  for (const type of chartTypes) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 400;
+    const ctx = canvas.getContext('2d');
+
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        const chart = new Chart(ctx, {
+          type: type === 'horizontalBar' ? 'bar' : type,
+          data: chartData,
+          options: {
+            ...options,
+            indexAxis: type === 'horizontalBar' ? 'y' : 'x',
+            responsive: false,
+            animation: false,
+            plugins: {
+              legend: { display: true },
+              title: {
+                display: true,
+                text: `${type.toUpperCase()} Chart`,
+              },
+            },
+          },
+        });
+
+        setTimeout(() => {
+          const imageData = canvas.toDataURL('image/png');
+
+          // Check if chart fits on current page
+          if (yOffset + 260 > pageHeight - margin) {
+            pdf.addPage();
+            yOffset = margin;
+          }
+
+          pdf.text(type.toUpperCase() + ' Chart', margin, yOffset);
+          pdf.addImage(imageData, 'PNG', margin, yOffset + 10, 550, 250);
+          chart.destroy();
+          yOffset += 280; // space for next chart
+          resolve();
+        }, 300);
+      }, 100);
+    });
+  }
+
+  // Sparkline export (Recharts)
+  const sparklineNode = document.querySelector('#sparkline-container');
+  if (sparklineNode) {
+    const canvas = await html2canvas(sparklineNode, {
+      backgroundColor: '#fff',
+      useCORS: true,
+    });
     const imgData = canvas.toDataURL('image/png');
 
-    const pdf = new jsPDF({
-      orientation: 'landscape',
-      unit: 'px',
-      format: [canvas.width, canvas.height],
-    });
+    // Add page if needed
+    if (yOffset + 160 > pageHeight - margin) {
+      pdf.addPage();
+      yOffset = margin;
+    }
 
-    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-    pdf.save(`chart-${chartType}.pdf`);
-  };
+    pdf.text('SPARKLINE', margin, yOffset);
+    pdf.addImage(imgData, 'PNG', margin, yOffset + 10, 550, 150);
+  }
+
+  pdf.save('all-charts.pdf');
+};
+
+
+
+
 
 
 return (
   <div className="analytics-container">
     <h2 className="analytics-header">
-      Analytics for: {record.filename || 'Uploaded File'}
+      <b>Analytics for {record.filename || 'Uploaded File'}</b>
     </h2>
 
-    <div className="analytics-body">
+    <div className="chart-section">
       <div className="sidebar-controls">
         <div>
-          <label htmlFor="x-column-select">X-Axis:</label>
+          <label htmlFor="x-column-select">X-axis</label>
           <select
             id="x-column-select"
             value={xColumn}
@@ -203,7 +390,7 @@ return (
         </div>
 
         <div>
-          <label htmlFor="y-column-select">Y-Axis:</label>
+          <label htmlFor="y-column-select">Y-axis</label>
           <select
             id="y-column-select"
             value={yColumn}
@@ -217,59 +404,35 @@ return (
           </select>
         </div>
 
-        <div>
-          <label htmlFor="chart-type-select">Chart Type:</label>
-          <select
-            id="chart-type-select"
-            value={chartType}
-            onChange={e => setChartType(e.target.value)}
-          >
-            <option value="bar">Bar</option>
-            <option value="line">Line</option>
-            <option value="pie">Pie</option>
-            <option value="doughnut">Doughnut</option>
-            <option value="radar">Radar</option>
-          </select>
-        </div>
-
         <div className="download-buttons">
-          <button onClick={downloadAsPNG}>Download as PNG</button>
-          <button onClick={downloadAsPDF}>Download as PDF</button>
+          <button onClick={downloadAsPNG}>Export as PNG</button>
+          <button onClick={exportAllChartsAsPDF}>Export All Charts as PDF</button>
         </div>
       </div>
 
       <div className="chart-display">
-        {renderChart()}
-      </div>
-    </div>
-
-    <div className="data-preview">
-      <h3>Data Preview (First 5 Rows)</h3>
-      <table>
-        <thead>
-          <tr>
-            {columns.map(col => (
-              <th key={col}>{col}</th>
+        <div style={{ width: '100%', textAlign: 'center' }}>
+          <div className="chart-type-toggle">
+            {['bar', 'line','horizontalBar','area','sparkline'].map(type => (
+              <button
+                key={type}
+                className={chartType === type ? 'active' : ''}
+                onClick={() => setChartType(type)}
+              >
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </button>
             ))}
-          </tr>
-        </thead>
-        <tbody>
-          {record.data.slice(0, 5).map((row, idx) => (
-            <tr key={idx}>
-              {columns.map(col => (
-                <td key={col}>
-                  {row[col] !== undefined && row[col] !== null
-                    ? row[col].toString()
-                    : ''}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          </div>
+
+          <div className={`chart-wrapper ${['pie', 'radar'].includes(chartType) ? 'small' : 'large'}`}>
+            {renderChart()}
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 );
+
 
 };
 
