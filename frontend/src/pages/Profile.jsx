@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import '../styles/profile.css';
-import { Save } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 function Profile() {
@@ -10,6 +9,7 @@ function Profile() {
   const [profileImage, setProfileImage] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isEditingUsername, setIsEditingUsername] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -99,79 +99,126 @@ function Profile() {
     }
   };
 
-  return (
-    <div className="profile-wrapper">
-      <div className="profile-container">
-        <div className="profile-left">
-          <div className="avatar-container">
-            <img
-              src={
-                profileImage ||
-                (user?.profileImage
-                  ? `http://localhost:8000${user.profileImage}`
-                  : '/images/avatar.png')
-              }
-              alt="Profile"
-              className="profile-avatar"
-            />
-            <label
-              className="upload-icon-button"
-              aria-label="Upload profile image"
-              tabIndex={0}
-            >
-              +
-              <input
-                type="file"
-                name="profileImage"
-                accept="image/*"
-                onChange={handleImageChange}
-                hidden
-                aria-hidden="true"
-              />
-            </label>
-          </div>
-          <p className="joined-date">
-            Joined: {user ? new Date(user.createdAt).toLocaleDateString() : ''}
+return (
+  <div className="profile-wrapper">
+    <div className="profile-container">
+      {/* LEFT SECTION */}
+      <div className="profile-left">
+        <div className="avatar-container">
+  <img
+    src={
+      profileImage ||
+      (user?.profileImage
+        ? `http://localhost:8000${user.profileImage}`
+        : '/images/avatar.png')
+    }
+    alt="Profile"
+    className="profile-avatar"
+  />
+
+  {isEditingUsername && (
+    <label className="upload-icon-button">
+      +
+      <input
+        type="file"
+        name="profileImage"
+        accept="image/*"
+        onChange={handleImageChange}
+        hidden
+      />
+    </label>
+  )}
+</div>
+
+        <div style={{ textAlign: 'center' }}>
+          <p style={{ margin: '10px 0 4px', fontWeight: '600' }}>
+            Welcome <span style={{ fontWeight: '500' }}>{user?.username}</span>
           </p>
-        </div>
-
-        <div className="profile-right">
-          <h2 className="profile-title">Profile Page</h2>
-
-          <div className="form-group">
-            <label htmlFor="username-input">Username</label>
-            <input
-              id="username-input"
-              type="text"
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              autoComplete="username"
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Email</label>
-            <input type="text" value={user?.email || ''} disabled />
-          </div>
-
-          <div className="form-group">
-            <label>Role</label>
-            <input type="text" value={user?.role || ''} disabled />
-          </div>
-
-          {isDirty() && (
-            <button
-              className="update-button"
-              onClick={handleProfileUpdate}
-              disabled={loading}
-            >
-              <Save size={16} /> {loading ? 'Updating...' : 'Update Profile'}
-            </button>
-          )}
+          <p style={{ fontSize: '14px', color: '#374151' }}>
+            You can also edit your username and profile
+          </p>
+          <button
+            className="edit-profile-btn"
+            onClick={() => setIsEditingUsername(true)}
+          >
+            Edit Profile
+          </button>
         </div>
       </div>
+
+      {/* RIGHT SECTION */}
+      <div className="profile-right">
+        <h2 className="profile-title">Profile Page</h2>
+
+        {!isEditingUsername ? (
+          <>
+            <div className="profile-info-row">
+              <span className="info-label">Username</span>
+              <span className="info-value">{user?.username}</span>
+            </div>
+            <div className="profile-info-row">
+              <span className="info-label">Email</span>
+              <span className="info-value">{user?.email}</span>
+            </div>
+            <div className="profile-info-row">
+              <span className="info-label">Role</span>
+              <span className="info-value">{user?.role}</span>
+            </div>
+            <div className="profile-info-row">
+              <span className="info-label">Joined</span>
+              <span className="info-value">
+                {user?.createdAt
+                  ? new Date(user.createdAt).toLocaleDateString()
+                  : ''}
+              </span>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="form-group">
+              <label>Username</label>
+              <input
+                id="username-input"
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                autoComplete="username"
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+              {isDirty() && (
+                <button
+                  className="update-button"
+                  onClick={async () => {
+                    await handleProfileUpdate();
+                    setIsEditingUsername(false);
+                  }}
+                  disabled={loading}
+                >
+                  {loading ? 'Updating...' : 'Update Profile'}
+                </button>
+              )}
+
+              <button
+                className="cancel-button"
+                onClick={() => {
+                  setEditName(user.username);
+                  setSelectedFile(null);
+                  setProfileImage(null);
+                  setIsEditingUsername(false);
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
-  );
+  </div>
+);
+
 }
 
 export default Profile;
