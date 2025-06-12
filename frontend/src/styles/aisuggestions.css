@@ -1,0 +1,41 @@
+.suggestions-header {
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.suggestions-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #111827;
+}
+
+.file-name {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.suggestion-title {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.chart-type {
+  font-weight: 600;
+  color: #4f46e5;
+}
+
+.badge {
+  background-color: #e0e7ff;
+  color: #3730a3;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.reason {
+  color: #4b5563;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}

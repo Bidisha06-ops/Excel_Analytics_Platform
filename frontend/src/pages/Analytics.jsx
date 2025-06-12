@@ -8,7 +8,7 @@ import { Bar, Line} from 'react-chartjs-2';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { Chart,registerables  } from 'chart.js/auto';
-
+import AISuggestions from './AISuggestion';
 
 import {
   Chart as ChartJS,
@@ -49,6 +49,7 @@ const Analytics = () => {
   const [chartType, setChartType] = useState('bar');
   const chartRef = useRef(null);
   const hasLoggedAnalyze = useRef(false);
+  const [showAISuggestions, setShowAISuggestions] = useState(false);
 
   useEffect(() => {
     const fetchRecordAndLogAnalyze = async () => {
@@ -218,7 +219,7 @@ const renderChart = () => {
       }));
 
       return (
-        <div style={{ width: '100%', height: 200 }} ref={chartRef}>
+        <div id="sparkline-container"style={{ width: '100%', height: 200 }} ref={chartRef}>
           <ResponsiveContainer>
             <LineChart data={sparklineData}>
               <XAxis dataKey="label" tick={{ fontSize: 10 }} />
@@ -366,8 +367,30 @@ const exportAllChartsAsPDF = async () => {
 
 
 
+
+
 return (
   <div className="analytics-container">
+    {/* 🧠 Floating AI Suggestions Toggle Button */}
+    <button
+      className="floating-ai-toggle"
+      onClick={() => setShowAISuggestions(prev => !prev)}
+    >
+      {showAISuggestions ? '×' : '🤖'}
+    </button>
+
+    {/* 🎯 AI Suggestions Panel (static, no animation) */}
+    {showAISuggestions && (
+      <div className="floating-ai-panel">
+        <AISuggestions
+          onClose={() => setShowAISuggestions(false)}
+          xColumn={xColumn}
+          yColumn={yColumn}
+          data={record?.data || []}
+        />
+      </div>
+    )}
+
     <h2 className="analytics-header">
       <b>Analytics for {record.filename || 'Uploaded File'}</b>
     </h2>
@@ -413,7 +436,7 @@ return (
       <div className="chart-display">
         <div style={{ width: '100%', textAlign: 'center' }}>
           <div className="chart-type-toggle">
-            {['bar', 'line','horizontalBar','area','sparkline'].map(type => (
+            {['bar', 'line', 'horizontalBar', 'area', 'sparkline'].map(type => (
               <button
                 key={type}
                 className={chartType === type ? 'active' : ''}
@@ -432,6 +455,8 @@ return (
     </div>
   </div>
 );
+
+
 
 
 };

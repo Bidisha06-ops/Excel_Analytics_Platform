@@ -224,6 +224,52 @@
 }
 
 
+/* Floating AI toggle button with zoom animation */
+.floating-ai-toggle {
+  position: absolute;
+  top: 15px;
+  right: 20px; /* ⬅️ Move to right */
+  transform: none; /* ⬅️ Remove translateX */
+  z-index: 100;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  font-size: 1.5rem;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  animation: zoomInOut 2s infinite ease-in-out;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes zoomInOut {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+  
+
+/* Static floating AI panel */
+.floating-ai-panel {
+  position: absolute;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 90;
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  width: 70%;
+  max-width: 900px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+
+
 /* 🔹 Responsive layout */
 @media (max-width: 768px) {
   .chart-section {

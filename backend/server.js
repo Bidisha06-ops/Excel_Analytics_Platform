@@ -90,3 +90,5 @@ connectDB()
   });
 
 
+const aiSuggestionRoutes = require('./routes/aiRoutes');
+app.use('/api/ai/', aiSuggestionRoutes);

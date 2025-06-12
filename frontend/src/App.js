@@ -14,6 +14,7 @@ import Upload from './pages/upload';
 import ActivityLog from './pages/ActivityLog';
 import Profile from './pages/Profile';
 import Analytics from './pages/Analytics';
+import AISuggestion from './pages/AISuggestion'; // ✅ Add this line
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
             <Route path="activity" element={<ActivityLog />} />
             <Route path="profile" element={<Profile />} />
             <Route path="analytics/:id" element={<Analytics />} />
+            <Route path="suggestions/:recordId" element={<AISuggestion />} /> 
           </Route>
         </Routes>
       </BrowserRouter>
