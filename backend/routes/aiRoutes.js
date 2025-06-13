@@ -8,32 +8,25 @@ require('dotenv').config();
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
-// Utility: Convert JSON data to Markdown-style preview table
 const generateTableFromJson = (data) => {
   if (!Array.isArray(data) || data.length === 0) return '';
   const keys = Object.keys(data[0]);
-  const rows = data.slice(0, 30); // show more rows for better context
-
+  const rows = data.slice(0, 30);
   const header = `| ${keys.join(' | ')} |`;
   const separator = `| ${keys.map(() => '---').join(' | ')} |`;
   const body = rows.map(row => `| ${keys.map(k => row[k] ?? '').join(' | ') } |`).join('\n');
-
   return `${header}\n${separator}\n${body}`;
 };
 
-// Utility: Analyze column types and structure
 const getColumnStats = (data) => {
   const stats = {};
   const sampleSize = Math.min(20, data.length);
-
   if (!Array.isArray(data) || data.length === 0) return stats;
-
   const keys = Object.keys(data[0]);
 
   for (const key of keys) {
     const values = data.map(row => row[key]).filter(val => val !== undefined && val !== null);
     const sample = values.slice(0, sampleSize);
-
     const numericCount = sample.filter(v => typeof v === 'number' || (!isNaN(v) && v !== '')).length;
     const dateCount = sample.filter(v => !isNaN(Date.parse(v))).length;
 
@@ -52,45 +45,56 @@ const getColumnStats = (data) => {
 
 router.post('/suggest/:recordId', protect, async (req, res) => {
   try {
+    const { viewMode } = req.body; // Get 2D or 3D
     if (!GROQ_API_KEY) {
-      return res.status(500).json({ success: false, message: 'GROQ API key missing in server environment' });
+      return res.status(500).json({ success: false, message: 'GROQ API key missing' });
     }
 
     const record = await ExcelRecord.findById(req.params.recordId);
-    if (!record) return res.status(404).json({ success: false, message: 'Excel record not found' });
-
+    if (!record) return res.status(404).json({ success: false, message: 'Record not found' });
     if (!record.uploadedBy || record.uploadedBy.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, message: 'Unauthorized access to record' });
+      return res.status(403).json({ success: false, message: 'Unauthorized' });
     }
 
     const jsonData = record.data;
     if (!Array.isArray(jsonData) || jsonData.length === 0) {
-      return res.status(400).json({ success: false, message: 'No data available in Excel sheet' });
+      return res.status(400).json({ success: false, message: 'No data in record' });
     }
 
     const table = generateTableFromJson(jsonData);
     const columnStats = getColumnStats(jsonData);
 
+    const is3D = viewMode === '3D';
+
     const prompt = `
-You are a data visualization expert. Based on the table data and column stats below, suggest 3 appropriate chart types from the following list: bar, line, horizontalBar, area, sparkline.
+You are a data visualization expert. Based on the table and column stats, suggest 3 ${is3D ? '3D' : '2D'} chart types.
 
-Make your suggestions based on data type (e.g., time, numeric, categorical), trends, comparisons, and chart suitability. Do NOT assume or invent column meanings. Pick columns that best represent interesting patterns.
+Choose from:
+${is3D
+  ? 'points, bubbles, point+line'
+  : 'bar, line, horizontalBar, area, sparkline'}
 
-Strictly respond in JSON array format:
-[
-  {
-    "chartType": "bar",
-    "xColumn": "Month",
-    "yColumn": "Revenue",
-    "reason": "Bar chart is best to compare monthly revenue"
-  }
-]
+Rules:
+- Respond in JSON array format.
+- Only use existing columns.
+- Only use ${is3D ? 'xColumn, yColumn, zColumn' : 'xColumn, yColumn'}.
+- Do NOT include explanations outside the JSON.
 
-Column analysis:
+Column stats:
 ${JSON.stringify(columnStats, null, 2)}
 
-Sample data preview:
+Data preview:
 ${table}
+
+Respond in this JSON format:
+[
+  {
+    "chartType": "${is3D ? 'bubbles' : 'bar'}",
+    "xColumn": "ColumnA",
+    "yColumn": "ColumnB"${is3D ? ',\n    "zColumn": "ColumnC"' : ''},
+    "reason": "Your reasoning here"
+  }
+]
     `;
 
     const startTime = Date.now();
@@ -109,7 +113,7 @@ ${table}
       }
     );
 
-    console.log(`\uD83E\uDDE0 GROQ response in ${Date.now() - startTime}ms`);
+    console.log(`🤖 GROQ responded in ${Date.now() - startTime}ms`);
 
     const content = groqResponse.data.choices[0]?.message?.content?.trim();
     if (!content) return res.status(500).json({ success: false, message: 'Empty AI response' });
@@ -117,7 +121,7 @@ ${table}
     let suggestions;
     try {
       const jsonMatch = content.match(/\[\s*{[\s\S]*}\s*\]/);
-      if (!jsonMatch) throw new Error('No valid JSON array found in response');
+      if (!jsonMatch) throw new Error('No valid JSON array found');
       suggestions = JSON.parse(jsonMatch[0]);
     } catch (err) {
       return res.status(500).json({

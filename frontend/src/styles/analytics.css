@@ -36,9 +36,8 @@
 .sidebar-controls {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  width: 220px;
   gap: 40px;
+  width: 220px;
   margin-top: 2rem;
 }
 
@@ -55,8 +54,8 @@
   border-radius: 8px;
   border: 1px solid #94a3b8; /* subtle slate-gray border */
   font-size: 14px;
-  background-color: var(--white); /* keep default background */
-  color: #0f172a; /* optional: keep text dark for readability */
+  background-color: var(--white);
+  color: #0f172a;
   width: 100%;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -64,11 +63,15 @@
 .sidebar-controls select:focus {
   outline: none;
   border-color: #0d1524;
-  box-shadow: #0d1524;
+  box-shadow: 0 0 0 3px rgba(13, 21, 36, 0.2);
 }
 
+/* Apply extra spacing in 3D mode */
+.three-d-mode .sidebar-controls {
+  margin-top: 0rem;
+}
 
-/* 🔹 Export buttons */
+/* 🔹 Export Buttons */
 .download-buttons {
   display: flex;
   flex-direction: column;
@@ -95,6 +98,12 @@
   background-color: #c7c7c7;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
+
+/* Apply extra spacing in 3D mode */
+.three-d-mode .download-buttons {
+  margin-top: 0rem;
+}
+
 
 /* 🔹 Chart main wrapper */
 .chart-main {
