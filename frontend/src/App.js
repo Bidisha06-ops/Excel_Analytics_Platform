@@ -14,7 +14,8 @@ import Upload from './pages/upload';
 import ActivityLog from './pages/ActivityLog';
 import Profile from './pages/Profile';
 import Analytics from './pages/Analytics';
-import AISuggestion from './pages/AISuggestion'; // ✅ Add this line
+import AISuggestion from './pages/AISuggestion';
+import RecentCharts from './pages/recentCharts';
 
 function App() {
   return (
@@ -29,20 +30,29 @@ function App() {
           {/* Protected Admin Panel */}
           <Route
             path="/adminpanel"
-            element={<ProtectedRoute><AdminPanel /></ProtectedRoute>}
+            element={
+              <ProtectedRoute>
+                <AdminPanel />
+              </ProtectedRoute>
+            }
           />
 
           {/* Protected Dashboard Layout with nested pages */}
           <Route
             path="/dashboard"
-            element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}
+            element={
+              <ProtectedRoute>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }
           >
             <Route index element={<Dashboard />} />
             <Route path="upload" element={<Upload />} />
             <Route path="activity" element={<ActivityLog />} />
+            <Route path="recentCharts" element={<RecentCharts />} /> {/* ✅ Fixed */}
             <Route path="profile" element={<Profile />} />
             <Route path="analytics/:id" element={<Analytics />} />
-            <Route path="suggestions/:recordId" element={<AISuggestion />} /> 
+            <Route path="suggestions/:recordId" element={<AISuggestion />} />
           </Route>
         </Routes>
       </BrowserRouter>

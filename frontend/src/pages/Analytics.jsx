@@ -11,6 +11,7 @@ import jsPDF from 'jspdf';
 
 import AISuggestion from './AISuggestion';
 import ThreeDView from './ThreeDView';
+import { useLocation } from 'react-router-dom';
 
 // ✅ Chart.js core imports and registration
 import {
@@ -57,15 +58,13 @@ const Analytics = () => {
   const [showAISuggestions, setShowAISuggestions] = useState(false);
   const [show3DView, setShow3DView] = useState(false);
   const [zColumn, setZColumn] = useState('');
+  const location = useLocation();
   
 
-
-  useEffect(() => {
+useEffect(() => {
   const fetchRecordAndLogAnalyze = async () => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) throw new Error('No auth token found');
-
       const config = {
         headers: { Authorization: `Bearer ${token}` },
       };
@@ -78,11 +77,18 @@ const Analytics = () => {
         setColumns(keys);
         setXColumn(keys[0]);
         setYColumn(keys.length > 1 ? keys[1] : keys[0]);
-        setZColumn(keys.length > 2 ? keys[2] : keys[0]); // 👈 New line for Z-axis
+        setZColumn(keys.length > 2 ? keys[2] : keys[0]);
       }
 
-      if (!hasLoggedAnalyze.current) {
+      if (!hasLoggedAnalyze.current && location.state?.from !== 'recentCharts') {
         hasLoggedAnalyze.current = true;
+
+        await axios.post(
+          'http://localhost:8000/api/recentCharts',
+          { recordId: id },
+          config
+        );
+
         await axios.post(
           `http://localhost:8000/api/activity/analyze/${id}`,
           { filename: res.data.filename || 'unknown file' },
@@ -90,15 +96,15 @@ const Analytics = () => {
         );
       }
     } catch (error) {
-      console.error('Error fetching record or logging analyze activity:', error);
-      toast.error('Failed to load record or log activity');
+      console.error('Error fetching record or logging:', error);
+      toast.error('Failed to load record');
     } finally {
       setLoading(false);
     }
   };
 
   fetchRecordAndLogAnalyze();
-}, [id]);
+}, [id, location.state]);
 
 
   if (loading) return <p>Loading...</p>;
