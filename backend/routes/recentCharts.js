@@ -15,9 +15,10 @@ router.post('/', protect, async (req, res) => {
     }
 
     const recentChart = await RecentChart.create({
-      userId: req.user.id,  // ✅ Include this line
+      userId: req.user.id,
       recordId,
       filename: record.filename,
+      action: 'analyze', // ✅ Store action
     });
 
     res.status(201).json({ success: true, recentChart });
@@ -30,9 +31,11 @@ router.post('/', protect, async (req, res) => {
 // GET /api/recentCharts
 router.get('/', protect, async (req, res) => {
   try {
-    const recentCharts = await RecentChart.find()
-      .sort({ createdAt: -1 })
-      .limit(10);
+    const recentCharts = await RecentChart.find({
+      userId: req.user.id,
+      action: 'analyze', // ✅ Only analyzed charts
+    }).sort({ createdAt: -1 }); // ✅ Return all for frontend grouping
+
     res.json(recentCharts);
   } catch (err) {
     console.error('Error fetching recent charts:', err.message);

@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const recentChartSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
   recordId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ExcelRecord',
@@ -10,15 +15,12 @@ const recentChartSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  userId: { // to support multi-user dashboard
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
+  action: {
+    type: String,
+    default: 'analyze',
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+}, {
+  timestamps: true,
 });
 
 module.exports = mongoose.model('RecentChart', recentChartSchema);

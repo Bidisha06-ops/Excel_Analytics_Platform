@@ -31,32 +31,34 @@ const RecentCharts = () => {
 
       try {
         const res = await axios.get('http://localhost:8000/api/recentCharts', config);
-        const grouped = { today: [], yesterday: [], lastWeek: [], lastMonth: [] };
         const now = moment();
 
-        // Deduplicate by recordId (only keep latest one)
-        const latestByRecordId = {};
-        res.data.forEach(chart => {
-          const existing = latestByRecordId[chart.recordId];
-          if (!existing || moment(chart.createdAt).isAfter(moment(existing.createdAt))) {
-            latestByRecordId[chart.recordId] = chart;
-          }
-        });
+        // Grouping logic with deduplication per recordId per day
+        const seen = {}; // { dateKey_recordId: true }
+        const grouped = {
+          today: [],
+          yesterday: [],
+          lastWeek: [],
+          lastMonth: [],
+        };
 
-        const uniqueCharts = Object.values(latestByRecordId);
-
-        uniqueCharts.forEach((chart) => {
+        res.data.forEach((chart) => {
           const created = moment(chart.createdAt);
           const daysAgo = now.diff(created, 'days');
 
-          if (daysAgo === 0) {
-            grouped.today.push(chart);
-          } else if (daysAgo === 1) {
-            grouped.yesterday.push(chart);
-          } else if (daysAgo <= 7) {
-            grouped.lastWeek.push(chart);
-          } else if (daysAgo <= 30) {
-            grouped.lastMonth.push(chart);
+          let groupKey = null;
+          if (daysAgo === 0) groupKey = 'today';
+          else if (daysAgo === 1) groupKey = 'yesterday';
+          else if (daysAgo <= 7) groupKey = 'lastWeek';
+          else if (daysAgo <= 30) groupKey = 'lastMonth';
+
+          if (groupKey) {
+            const dateKey = created.format('YYYY-MM-DD');
+            const uniqueKey = `${dateKey}_${chart.recordId}`;
+            if (!seen[uniqueKey]) {
+              grouped[groupKey].push(chart);
+              seen[uniqueKey] = true;
+            }
           }
         });
 
