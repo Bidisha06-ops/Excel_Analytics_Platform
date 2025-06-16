@@ -1,0 +1,18 @@
+.admin-dashboard-layout {
+  display: flex;
+  height: 100vh;
+  background-color: #f9fafb;
+}
+
+.admin-main-section {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: 220px; /* Match AdminSidebar width */
+}
+
+.admin-content {
+  padding: 24px 32px;
+  overflow-y: auto;
+  flex-grow: 1;
+}

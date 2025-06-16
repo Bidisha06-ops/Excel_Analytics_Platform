@@ -92,3 +92,10 @@ connectDB()
 
 const aiSuggestionRoutes = require('./routes/aiRoutes');
 app.use('/api/ai/', aiSuggestionRoutes);
+
+const recentChartsRoutes = require('./routes/recentCharts');
+app.use('/api/recentCharts', recentChartsRoutes);
+
+
+const adminRoutes = require('./routes/admin');
+app.use('/api/admin', adminRoutes);

@@ -52,7 +52,7 @@ const StorageUsage = () => {
           trailColor: '#eee',
         })}
       />
-      <div className='s'>
+      <div className='storage-info'>
         <strong>{usedMB} MB</strong> / {totalMB} MB used
       </div>
     </div>

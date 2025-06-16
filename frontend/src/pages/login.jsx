@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 import { toast, Toaster } from 'react-hot-toast';
 import { USER_API_END_POINT } from '../api/api';
-import { useNavigate } from 'react-router-dom';
-import '../styles/Login.css'; // ⬅️ Make sure to import the CSS
-import '../styles/font.css'
+import { useNavigate, Link } from 'react-router-dom';
+import '../styles/Login.css';
+import '../styles/font.css';
+
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
       const response = await fetch(`${USER_API_END_POINT}/login`, {
@@ -28,7 +31,7 @@ function Login() {
         localStorage.setItem('token', data.token);
 
         if (data.user.role === 'admin') {
-          navigate('/adminpanel');
+          navigate('/admin');
         } else {
           navigate('/dashboard');
         }
@@ -38,6 +41,8 @@ function Login() {
     } catch (error) {
       console.error('Login error:', error);
       toast.error('An error occurred. Please try again later.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -72,18 +77,17 @@ function Login() {
               <label htmlFor="password">Password</label>
             </div>
 
-            <button type="submit" className="login-btn">
-              Login
+            <button type="submit" className="login-btn" disabled={loading}>
+              {loading ? 'Logging in...' : 'Login'}
             </button>
           </form>
 
           <p className="register-link">
-            Don’t have an account? <a href="/register">Register</a>
+            Don’t have an account? <Link to="/register">Register</Link>
           </p>
         </div>
       </div>
     </div>
-
   );
 }
 
