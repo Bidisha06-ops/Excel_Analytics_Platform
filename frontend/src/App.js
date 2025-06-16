@@ -15,6 +15,7 @@ import ActivityLog from './pages/ActivityLog';
 import Profile from './pages/Profile';
 import Analytics from './pages/Analytics';
 import AISuggestion from './pages/AISuggestion'; // ✅ Add this line
+import AdminUserList from './pages/AdminUserList';
 
 function App() {
   return (
@@ -31,6 +32,12 @@ function App() {
             path="/adminpanel"
             element={<ProtectedRoute><AdminPanel /></ProtectedRoute>}
           />
+           {/*Users list */}
+          <Route
+            path="/adminpanel/userlist"
+            element={<ProtectedRoute><AdminUserList /></ProtectedRoute>}
+          />
+
 
           {/* Protected Dashboard Layout with nested pages */}
           <Route

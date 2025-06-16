@@ -6,6 +6,17 @@ const User = require("../models/user");
 const { protect, adminOnly } = require("../middleware/auth");
 const upload = require("../middleware/uploadImage");
 
+
+// GET all users  /api/user/users
+router.get('/users', async (req, res) => {
+  try {
+    const users = await User.find({});
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 // GET /api/user/profile
 router.get("/profile", protect, async (req, res) => {
   try {

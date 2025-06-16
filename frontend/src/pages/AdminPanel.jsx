@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
-
+import '../styles/AdminPanel.css';
+import { useNavigate } from 'react-router-dom';
+import AdminUserList from './AdminUserList';
 const StorageUsage = () => {
   const [storageData, setStorageData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+ const navigate = useNavigate();
   useEffect(() => {
     const fetchStorageData = async () => {
       try {
@@ -38,7 +40,9 @@ const StorageUsage = () => {
   const percentage = totalQuota > 0 ? Math.min((storageSize / totalQuota) * 100, 100) : 0;
 
   return (
-    <div style={{ width: 160, height: 160 }}>
+   <div className='main-panel'>
+ <div className='card1'>
+   <div className='progress-wrapper'>
       <CircularProgressbar
         value={percentage}
         text={`${percentage.toFixed(1)}%`}
@@ -48,10 +52,15 @@ const StorageUsage = () => {
           trailColor: '#eee',
         })}
       />
-      <div style={{ textAlign: 'center', marginTop: 10 }}>
+      <div className='s'>
         <strong>{usedMB} MB</strong> / {totalMB} MB used
       </div>
     </div>
+ </div>
+<div className='card2'>
+   <AdminUserList/>
+</div>
+   </div>
   );
 };
 
