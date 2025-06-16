@@ -19,6 +19,10 @@ const recentChartSchema = new mongoose.Schema({
     type: String,
     default: 'analyze',
   },
+  chartType: {
+    type: String, // e.g. "Bar Chart", "Line Chart"
+    required: false,
+  },
 }, {
   timestamps: true,
 });

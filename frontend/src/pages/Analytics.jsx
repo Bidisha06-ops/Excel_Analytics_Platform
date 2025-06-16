@@ -84,10 +84,14 @@ useEffect(() => {
         hasLoggedAnalyze.current = true;
 
         await axios.post(
-          'http://localhost:8000/api/recentCharts',
-          { recordId: id },
-          config
-        );
+  'http://localhost:8000/api/recentCharts',
+  {
+    recordId: id,
+    chartType, // 👈 send current chartType to backend
+  },
+  config
+);
+
 
         await axios.post(
           `http://localhost:8000/api/activity/analyze/${id}`,
@@ -105,6 +109,32 @@ useEffect(() => {
 
   fetchRecordAndLogAnalyze();
 }, [id, location.state]);
+
+
+useEffect(() => {
+  const logChartView = async () => {
+    if (!record || !record._id) return;
+
+    const token = localStorage.getItem('token');
+    try {
+      await axios.post(
+        'http://localhost:8000/api/recentCharts',
+        {
+          recordId: record._id,
+          chartType,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+    } catch (error) {
+      console.error('Error logging chart view by type:', error);
+    }
+  };
+
+  const timeout = setTimeout(logChartView, 500); // debounce
+  return () => clearTimeout(timeout);
+}, [chartType]);
 
 
   if (loading) return <p>Loading...</p>;

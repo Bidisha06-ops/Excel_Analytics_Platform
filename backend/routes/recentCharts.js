@@ -7,7 +7,7 @@ const { protect } = require('../middleware/auth');
 // POST /api/recentCharts
 router.post('/', protect, async (req, res) => {
   try {
-    const { recordId } = req.body;
+    const { recordId, chartType } = req.body;
 
     const record = await ExcelRecord.findById(recordId);
     if (!record) {
@@ -18,7 +18,8 @@ router.post('/', protect, async (req, res) => {
       userId: req.user.id,
       recordId,
       filename: record.filename,
-      action: 'analyze', // ✅ Store action
+      action: 'analyze', // or 'view' if needed
+      chartType, // ✅ Store chart type like "Bar Chart", "Line Chart", etc.
     });
 
     res.status(201).json({ success: true, recentChart });
@@ -33,8 +34,8 @@ router.get('/', protect, async (req, res) => {
   try {
     const recentCharts = await RecentChart.find({
       userId: req.user.id,
-      action: 'analyze', // ✅ Only analyzed charts
-    }).sort({ createdAt: -1 }); // ✅ Return all for frontend grouping
+      action: 'analyze',
+    }).sort({ createdAt: -1 });
 
     res.json(recentCharts);
   } catch (err) {
