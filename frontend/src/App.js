@@ -15,10 +15,6 @@ import Upload from './pages/upload';
 import ActivityLog from './pages/ActivityLog';
 import Profile from './pages/Profile';
 import Analytics from './pages/Analytics';
-<<<<<<< HEAD
-import AISuggestion from './pages/AISuggestion'; // ✅ Add this line
-import AdminUserList from './pages/AdminUserList';
-=======
 import AISuggestion from './pages/AISuggestion';
 import RecentCharts from './pages/recentCharts';
 
@@ -26,7 +22,6 @@ import AdminDashboard from './pages/AdminDashboard';
 import UserManagement from './pages/UserManagement';
 import UsageAnalytics from './pages/UsageAnalytics';
 import ManageRecords from './pages/ManageRecords';
->>>>>>> c5f57754dda7e6141cb1a83df5833bda02cace0f
 
 function App() {
   return (
@@ -40,17 +35,6 @@ function App() {
 
           {/* Admin routes */}
           <Route
-<<<<<<< HEAD
-            path="/adminpanel"
-            element={<ProtectedRoute><AdminPanel /></ProtectedRoute>}
-          />
-           {/*Users list */}
-          <Route
-            path="/adminpanel/userlist"
-            element={<ProtectedRoute><AdminUserList /></ProtectedRoute>}
-          />
-
-=======
             path="/admin"
             element={
               <ProtectedRoute>
@@ -63,9 +47,8 @@ function App() {
             <Route path="analytics" element={<UsageAnalytics />} />
             <Route path="records" element={<ManageRecords />} />
           </Route>
->>>>>>> c5f57754dda7e6141cb1a83df5833bda02cace0f
 
-          {/* User dashboard */}
+          {/* User dashboard routes */}
           <Route
             path="/dashboard"
             element={
