@@ -15,15 +15,13 @@ import Upload from './pages/upload';
 import ActivityLog from './pages/ActivityLog';
 import Profile from './pages/Profile';
 import Analytics from './pages/Analytics';
-import AISuggestion from './pages/AISuggestion'; // ✅ Add this line
-import AdminUserList from './pages/AdminUserList';
+import AISuggestion from './pages/AISuggestion';
 import RecentCharts from './pages/recentCharts';
 
 import AdminDashboard from './pages/AdminDashboard';
 import UserManagement from './pages/UserManagement';
 import UsageAnalytics from './pages/UsageAnalytics';
 import ManageRecords from './pages/ManageRecords';
-import AdminPanel from './pages/AdminPanel'
 
 function App() {
   return (
@@ -37,15 +35,6 @@ function App() {
 
           {/* Admin routes */}
           <Route
-            path="/adminpanel"
-            element={<ProtectedRoute><AdminPanel /></ProtectedRoute>}
-          />
-           {/*Users list */}
-          <Route
-            path="/adminpanel/userlist"
-            element={<ProtectedRoute><AdminUserList /></ProtectedRoute>}
-          />
-<Route
             path="/admin"
             element={
               <ProtectedRoute>
@@ -59,7 +48,7 @@ function App() {
             <Route path="records" element={<ManageRecords />} />
           </Route>
 
-          {/* User dashboard */}
+          {/* User dashboard routes */}
           <Route
             path="/dashboard"
             element={
