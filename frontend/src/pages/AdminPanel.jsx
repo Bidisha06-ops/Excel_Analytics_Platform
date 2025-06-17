@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import '../styles/AdminPanel.css';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import AdminUserList from './AdminUserList';
-const StorageUsage = () => {
+const AdminPanel = () => {
   const [storageData, setStorageData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
- const navigate = useNavigate();
+//  const navigate = useNavigate();
   useEffect(() => {
     const fetchStorageData = async () => {
       try {
@@ -64,4 +64,4 @@ const StorageUsage = () => {
   );
 };
 
-export default StorageUsage;
+export default AdminPanel;
