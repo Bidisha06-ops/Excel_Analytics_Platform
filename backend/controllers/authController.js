@@ -66,12 +66,8 @@ const registeruser = async (req, res) => {
 
 
 
-
-
-// ✅ LOGIN CONTROLLER
 const loginUser = async (req, res) => {
   try {
-    // 1. Destructure request body
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -81,7 +77,7 @@ const loginUser = async (req, res) => {
       });
     }
 
-    // 2. Find user by email
+    // Find user by email
     const user = await usermodel.findOne({ email });
     if (!user) {
       return res.status(400).json({
@@ -90,7 +86,15 @@ const loginUser = async (req, res) => {
       });
     }
 
-    // 3. Compare password
+    // 🔒 Block check
+    if (user.isBlocked) {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been blocked. Please contact admin.",
+      });
+    }
+
+    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({
@@ -99,10 +103,9 @@ const loginUser = async (req, res) => {
       });
     }
 
-    // 4. Generate JWT token
+    // Generate token
     const token = generateToken(user);
 
-    // 5. Respond with token and user role
     return res.status(200).json({
       success: true,
       message: "Login successful",
@@ -116,7 +119,6 @@ const loginUser = async (req, res) => {
     });
 
   } catch (error) {
-    // 6. Handle error
     console.error("Login error:", error);
     return res.status(500).json({
       success: false,

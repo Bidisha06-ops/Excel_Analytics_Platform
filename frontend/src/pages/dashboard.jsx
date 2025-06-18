@@ -49,7 +49,7 @@ const Dashboard = () => {
   }, [token, fetchDashboardData]);
 
   // Function to handle profile photo update (you need to call this on your profile UI)
-  const handleProfilePhotoUpdate = async (newPhotoData) => {
+   const handleProfilePhotoUpdate = async (newPhotoData) => {
     try {
       console.log('🔼 Sending photo update:', newPhotoData.slice(0, 30)); // trimmed preview
       const config = {

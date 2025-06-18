@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   role: { type: String, required: true },
   profileImage: { type: String, default: '' },
+  isBlocked: { type: Boolean, default: false }, //  to block
 }, { timestamps: true });
 
 module.exports = mongoose.model("User", userSchema);

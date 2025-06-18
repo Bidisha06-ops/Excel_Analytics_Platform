@@ -7,15 +7,41 @@ const { protect, adminOnly } = require("../middleware/auth");
 const upload = require("../middleware/uploadImage");
 
 
-// GET all users  /api/user/users
+// GET all non-admin users  /api/user/users
 router.get('/users', async (req, res) => {
   try {
-    const users = await User.find({});
+    const users = await User.find({ role: { $ne: 'admin' } }); 
     res.json(users);
   } catch (err) {
     res.status(500).json({ message: 'Server Error' });
   }
 });
+// DELETE a user
+router.delete('/delete/:id', async (req, res) => {
+  try {
+    const deleted = await User.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ message: 'User not found' });
+    res.json({ message: 'User deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// TOGGLE block/unblock
+router.patch('/block/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.isBlocked = !user.isBlocked;
+    await user.save();
+
+    res.json({ message: `User ${user.isBlocked ? 'blocked' : 'unblocked'} successfully` });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 
 // GET /api/user/profile
 router.get("/profile", protect, async (req, res) => {
