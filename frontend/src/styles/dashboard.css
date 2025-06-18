@@ -9,7 +9,9 @@
   gap: 20px;
   min-height: 0;
   overflow: hidden;
+  font-weight: bold;
 }
+
 
 /* Wrapper for top two columns */
 .top-columns {
@@ -95,13 +97,13 @@
   padding: 20px 25px;
   border-radius: 14px;
   flex: 1 1 auto;
-  overflow: hidden;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   box-shadow: 0 0 12px rgb(0 0 0 / 0.1);  
   z-index: 1;
   position: relative;
+  font-weight: bold;
 }
 
 .activity-summary h3 {
@@ -133,7 +135,7 @@
   margin-bottom: 12px;
   color:#0d1524;
   line-height: 1.4;
-  font-weight:550;
+  font-weight:bold
   
 }
 

@@ -2,6 +2,7 @@
 .profile-wrapper {
   background: white;
   font-family: 'Circe Contrast', sans-serif;
+  font-weight: bold;
   border-radius: 12px;
   min-height: 80vh;
   padding: 30px 20px;
@@ -150,7 +151,7 @@
   background-color: #f3f4f6;
   font-size: 15px;
   color: #111827;
-  font-weight: 500;
+  font-weight:bold;
 }
 
 .form-group input:disabled {

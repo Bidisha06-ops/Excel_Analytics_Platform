@@ -3,6 +3,7 @@
   padding: 2rem;
   border-radius: 12px;
   font-family: 'Circe Contrast', sans-serif;
+  font-weight: bold;
   box-shadow: 0 0 12px rgb(0 0 0 / 0.1);
   z-index: 1;
   position: relative;

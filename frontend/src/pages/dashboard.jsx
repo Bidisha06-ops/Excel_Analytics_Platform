@@ -187,6 +187,7 @@ useEffect(() => {
                 <ul>
                   {activityLogs
                     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                    .slice(0, 8)
                     .map((log, i) => (
                       <li key={i}>
                         {log.action === 'upload' && `Uploaded ${log.filename}`}

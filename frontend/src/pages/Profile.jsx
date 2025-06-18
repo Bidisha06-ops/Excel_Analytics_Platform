@@ -132,7 +132,7 @@ return (
 
         <div style={{ textAlign: 'center' }}>
           <p style={{ margin: '10px 0 4px', fontWeight: '600' }}>
-            Welcome <span style={{ fontWeight: '500' }}>{user?.username}</span>
+            Welcome <span style={{ fontWeight: 'bold',color:'green' }}>{user?.username}</span>
           </p>
           <p style={{ fontSize: '14px', color: '#374151' }}>
             You can also edit your username and profile

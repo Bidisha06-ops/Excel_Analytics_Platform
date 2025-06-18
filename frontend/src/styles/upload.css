@@ -28,6 +28,7 @@
   box-sizing: border-box; /* Ensures padding doesn't increase size */
   overflow-y: auto; /* Allows scroll if content exceeds height */
   font-family: 'Circe Contrast', sans-serif;
+  font-weight: bold;
   overflow: hidden;
 }
 
