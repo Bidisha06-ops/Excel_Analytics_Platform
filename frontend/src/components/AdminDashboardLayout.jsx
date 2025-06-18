@@ -1,5 +1,6 @@
-import React from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
 import {
   LayoutDashboard,
   Users,
@@ -7,20 +8,40 @@ import {
   Folder,
   LogOut,
 } from 'lucide-react';
-import '../styles/DashboardLayout.css';
+import '../styles/AdminDashboardLayout.css';
+
+const BACKEND_URL = 'http://localhost:8000';
 
 const AdminDashboardLayout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [adminUser, setAdminUser] = useState(null);
 
-  const logoutHandler = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
-  };
+  useEffect(() => {
+    const fetchAdmin = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return navigate('/login');
+
+        const res = await axios.get(`${BACKEND_URL}/api/user/profile`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setAdminUser(res.data.user);
+        localStorage.setItem('username', res.data.user.username);
+      } catch (error) {
+        console.error('Failed to fetch admin profile:', error);
+        navigate('/login');
+      }
+    };
+
+    fetchAdmin();
+  }, [navigate]);
 
   return (
     <div className="dashboardlayout-container">
-      {/* Decorative corners */}
-      <div className="background-decorations">
+      {/* Decorative Background */}
+      <div className="background-decorations" key={`admin-${location.pathname}`}>
         <div className="top-right-decoration" />
         <div className="bottom-right-decoration" />
       </div>
@@ -34,17 +55,25 @@ const AdminDashboardLayout = () => {
             className="dashboardlayout-logo"
           />
         </div>
-        <div className="header-center">Excel Analytics Platform</div>
+        <div className="header-center">Admin Panel</div>
         <div className="header-right">
+          <span className="header-username">
+            {adminUser?.username || localStorage.getItem('username') || 'Admin'}
+          </span>
           <img
-            src="/images/avatar.png"
+            src={
+              adminUser?.profileImage
+                ? `${BACKEND_URL}${adminUser.profileImage}`
+                : '/images/avatar.png'
+            }
             alt="Admin Avatar"
             className="dashboardlayout-profile-pic"
+            onClick={() => navigate('/admin/profile')}
           />
         </div>
       </header>
 
-      {/* Sidebar + Content */}
+      {/* Sidebar and Content */}
       <div className="dashboardlayout-body">
         <aside className="dashboardlayout-sidebar slide-left">
           <button onClick={() => navigate('/admin')}>
@@ -53,7 +82,7 @@ const AdminDashboardLayout = () => {
           </button>
           <button onClick={() => navigate('/admin/users')}>
             <Users size={18} />
-            Manage User
+            Manage Users
           </button>
           <button onClick={() => navigate('/admin/analytics')}>
             <BarChart2 size={18} />
@@ -63,7 +92,13 @@ const AdminDashboardLayout = () => {
             <Folder size={18} />
             Manage Records
           </button>
-          <button onClick={logoutHandler} className="logout-button">
+          <button
+            className="logout-button"
+            onClick={() => {
+              localStorage.clear();
+              navigate('/login');
+            }}
+          >
             <LogOut size={18} />
             Logout
           </button>

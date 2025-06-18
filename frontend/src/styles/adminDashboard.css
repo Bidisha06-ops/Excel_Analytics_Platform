@@ -2,7 +2,12 @@
   padding: 40px;
   background: #f9fafb;
   min-height: 100vh;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Circe Contrast', sans-serif;
+  font-weight: bold;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04); /* Mild shadow */
+  position: relative;
+  box-sizing: border-box;
 }
 
 .admin-dashboard-title {
@@ -22,8 +27,14 @@
   background: #ffffff;
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06); /* Mild card shadow */
   text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* Slightly stronger on hover */
 }
 
 .admin-card h3 {
@@ -36,4 +47,52 @@
   font-size: 24px;
   font-weight: bold;
   color: #1d4ed8;
+}
+
+.admin-chart-section {
+  margin-top: 40px;
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05); /* Mild chart section shadow */
+}
+
+.admin-chart-title {
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  color: #111827;
+}
+
+.admin-chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 10px;
+}
+
+.view-toggle button {
+  padding: 6px 14px;
+  border: 1px solid #d1d5db;
+  background: #f3f4f6;
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: 500;
+  color: #374151;
+  transition: all 0.2s ease-in-out;
+}
+
+.view-toggle button:hover {
+  background-color: #e5e7eb;
+}
+
+.view-toggle button.active {
+  background-color: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
 }
