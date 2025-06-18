@@ -9,8 +9,11 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell
 } from 'recharts';
-import moment from 'moment'; // ✅ Install moment if not already: npm install moment
+import moment from 'moment';
 import '../styles/adminDashboard.css';
 
 const AdminDashboard = () => {
@@ -19,29 +22,55 @@ const AdminDashboard = () => {
     totalUploads: 0,
     mostUsedChart: 'N/A',
     chartData: [],
+    onlineStats: {
+      online: 0,
+      offline: 0
+    }
   });
 
   const [viewType, setViewType] = useState('day'); // day | week | month
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:8000/api/admin/stats', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setStats(response.data);
-      } catch (error) {
-        console.error('Error fetching admin stats:', error);
-      }
-    };
+  // ✅ Fetch stats function
+  const fetchStats = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:8000/api/admin/stats', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setStats(response.data);
+    } catch (error) {
+      console.error('Error fetching admin stats:', error);
+    }
+  };
 
-    fetchStats();
+  // ✅ Initial fetch + interval for stats
+  useEffect(() => {
+    fetchStats(); // initial fetch
+    const statsInterval = setInterval(fetchStats, 20000); // 20 sec refresh
+
+    return () => clearInterval(statsInterval);
   }, []);
 
+  // ✅ Ping logic to keep user online
+useEffect(() => {
+  const pingInterval = setInterval(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    axios.patch('http://localhost:8000/api/user/ping', {}, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).catch(err => {
+      console.error('Ping failed:', err);
+    });
+  }, 20000); // every 5 seconds
+
+  return () => clearInterval(pingInterval);
+}, []);
+
+
+  // ✅ Group data (day, week, month)
   const groupChartData = (data, type) => {
     const grouped = {};
-
     data.forEach(item => {
       let key;
       if (type === 'week') {
@@ -64,6 +93,13 @@ const AdminDashboard = () => {
 
   const filteredData = groupChartData(stats.chartData, viewType);
 
+  const onlineOfflineData = [
+    { name: 'Online', value: stats.onlineStats.online },
+    { name: 'Offline', value: stats.onlineStats.offline }
+  ];
+
+  const COLORS = ['#4CAF50', '#E57373'];
+
   return (
     <div className="admin-dashboard">
       <h2 className="admin-dashboard-title">Admin Dashboard</h2>
@@ -85,73 +121,66 @@ const AdminDashboard = () => {
         </div>
       </div>
 
+      {/* 📈 Line Chart */}
       <div className="admin-chart-section">
         <div className="admin-chart-header">
           <h3 className="admin-chart-title"><b>Uploads vs Analyzed Files</b></h3>
           <div className="view-toggle">
-            <button
-              className={viewType === 'day' ? 'active' : ''}
-              onClick={() => setViewType('day')}
-            >
-              Day
-            </button>
-            <button
-              className={viewType === 'week' ? 'active' : ''}
-              onClick={() => setViewType('week')}
-            >
-              Week
-            </button>
-            <button
-              className={viewType === 'month' ? 'active' : ''}
-              onClick={() => setViewType('month')}
-            >
-              Month
-            </button>
+            <button className={viewType === 'day' ? 'active' : ''} onClick={() => setViewType('day')}>Day</button>
+            <button className={viewType === 'week' ? 'active' : ''} onClick={() => setViewType('week')}>Week</button>
+            <button className={viewType === 'month' ? 'active' : ''} onClick={() => setViewType('month')}>Month</button>
           </div>
         </div>
 
         <ResponsiveContainer width="100%" height={350}>
-          <LineChart
-            data={filteredData}
-            margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
-          >
+          <LineChart data={filteredData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
-  dataKey="date"
-  tickFormatter={(date) => {
-    if (viewType === 'day') {
-      return moment(date).format('MMM D'); // Jun 18
-    } else if (viewType === 'week') {
-      const start = moment(date, 'YYYY-[W]WW').startOf('isoWeek');
-      const end = moment(date, 'YYYY-[W]WW').endOf('isoWeek');
-      return `${start.format('MMM D')} - ${end.format('MMM D')}`; // e.g., Jun 17 - Jun 23
-    } else if (viewType === 'month') {
-      return moment(date).format('MMMM'); // June
-    }
-    return date;
-  }}
-/>
-
+              dataKey="date"
+              tickFormatter={(date) => {
+                if (viewType === 'day') return moment(date).format('MMM D');
+                if (viewType === 'week') {
+                  const start = moment(date, 'YYYY-[W]WW').startOf('isoWeek');
+                  const end = moment(date, 'YYYY-[W]WW').endOf('isoWeek');
+                  return `${start.format('MMM D')} - ${end.format('MMM D')}`;
+                }
+                if (viewType === 'month') return moment(date).format('MMMM');
+                return date;
+              }}
+            />
             <YAxis allowDecimals={false} />
             <Tooltip />
             <Legend />
-            <Line
-              type="monotone"
-              dataKey="uploads"
-              stroke="#8884d8"
-              strokeWidth={2}
-              dot={{ r: 5 }}
-              name="Uploads"
-            />
-            <Line
-              type="monotone"
-              dataKey="analyzed"
-              stroke="#82ca9d"
-              strokeWidth={2}
-              dot={{ r: 5 }}
-              name="Analyzed"
-            />
+            <Line type="monotone" dataKey="uploads" stroke="#8884d8" strokeWidth={2} dot={{ r: 5 }} name="Uploads" />
+            <Line type="monotone" dataKey="analyzed" stroke="#82ca9d" strokeWidth={2} dot={{ r: 5 }} name="Analyzed" />
           </LineChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* 🟢🔴 Pie Chart */}
+      <div className="admin-chart-section">
+        <div className="admin-chart-header">
+          <h3 className="admin-chart-title"><b>Online vs Offline Users</b></h3>
+        </div>
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart width={300} height={300}>
+            <Pie
+              data={onlineOfflineData}
+              cx="50%"
+              cy="50%"
+              labelLine={false}
+              label={({ name, value }) => `${name}: ${value}`}
+              outerRadius={80}
+              fill="#8884d8"
+              dataKey="value"
+            >
+              {onlineOfflineData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip formatter={(value, name) => [`${value}`, `${name}`]} />
+            <Legend />
+          </PieChart>
         </ResponsiveContainer>
       </div>
     </div>
@@ -159,3 +188,4 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+  

@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 import Login from './pages/login';
@@ -23,49 +23,89 @@ import UserManagement from './pages/UserManagement';
 import UsageAnalytics from './pages/UsageAnalytics';
 import ManageRecords from './pages/ManageRecords';
 
+import BlockedPage from './pages/BlockedPage';
+import axios from 'axios';
+import { useEffect } from 'react';
+
+function AppRoutes() {
+  const { user, isBlocked, blockChecked } = useAuth();
+
+  // ✅ Show nothing until block status is known (prevents false render)
+  if (user && !blockChecked) {
+    return null; // or a loading spinner
+  }
+
+  // ✅ Show BlockedPage if user is blocked
+  if (user && isBlocked) {
+    return <BlockedPage />;
+  }
+
+  // ✅ Ping user presence
+  useEffect(() => {
+    const pingInterval = setInterval(() => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      axios
+        .patch('http://localhost:8000/api/user/ping', {}, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .catch((err) => {
+          console.error('Ping failed:', err);
+        });
+    }, 5000);
+
+    return () => clearInterval(pingInterval);
+  }, []);
+
+  return (
+    <Routes>
+      {/* Public routes */}
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+
+      {/* Admin routes */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <AdminDashboardLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<AdminDashboard />} />
+        <Route path="users" element={<UserManagement />} />
+        <Route path="analytics" element={<UsageAnalytics />} />
+        <Route path="records" element={<ManageRecords />} />
+      </Route>
+
+      {/* User dashboard routes */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Dashboard />} />
+        <Route path="upload" element={<Upload />} />
+        <Route path="activity" element={<ActivityLog />} />
+        <Route path="recentCharts" element={<RecentCharts />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="analytics/:id" element={<Analytics />} />
+        <Route path="suggestions/:recordId" element={<AISuggestion />} />
+      </Route>
+    </Routes>
+  );
+}
+
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-
-          {/* Admin routes */}
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute>
-                <AdminDashboardLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<AdminDashboard />} />
-            <Route path="users" element={<UserManagement />} />
-            <Route path="analytics" element={<UsageAnalytics />} />
-            <Route path="records" element={<ManageRecords />} />
-          </Route>
-
-          {/* User dashboard routes */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<Dashboard />} />
-            <Route path="upload" element={<Upload />} />
-            <Route path="activity" element={<ActivityLog />} />
-            <Route path="recentCharts" element={<RecentCharts />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="analytics/:id" element={<Analytics />} />
-            <Route path="suggestions/:recordId" element={<AISuggestion />} />
-          </Route>
-        </Routes>
+        <AppRoutes />
       </BrowserRouter>
     </AuthProvider>
   );

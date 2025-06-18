@@ -4,12 +4,17 @@ import { USER_API_END_POINT } from '../api/api';
 import { useNavigate, Link } from 'react-router-dom';
 import '../styles/Login.css';
 import '../styles/font.css';
+import { useAuth } from '../context/AuthContext';
+import BlockedPage from '../pages/BlockedPage';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isBlockedUser, setIsBlockedUser] = useState(false);
+
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,17 +23,27 @@ function Login() {
     try {
       const response = await fetch(`${USER_API_END_POINT}/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
+      console.log("Login response:", data); // helpful debug
+
+      // ✅ Blocked user handling (either based on status code or returned isBlocked flag)
+      if (
+        response.status === 403 ||
+        data?.user?.isBlocked === true
+      ) {
+        toast.error(data.message || 'Your account has been blocked.');
+        setTimeout(() => setIsBlockedUser(true), 300);
+        return;
+      }
 
       if (response.ok) {
         toast.success(`Welcome back, ${data.user.username}!`);
         localStorage.setItem('token', data.token);
+        login(data.user);
 
         if (data.user.role === 'admin') {
           navigate('/admin');
@@ -38,13 +53,16 @@ function Login() {
       } else {
         toast.error(data.message || 'Login failed. Please try again.');
       }
-    } catch (error) {
-      console.error('Login error:', error);
-      toast.error('An error occurred. Please try again later.');
+    } catch (err) {
+      console.error('Login error:', err);
+      toast.error('Server error. Please try again later.');
     } finally {
       setLoading(false);
     }
   };
+
+  // ✅ Show BlockedPage component if blocked
+  if (isBlockedUser) return <BlockedPage />;
 
   return (
     <div className="container">

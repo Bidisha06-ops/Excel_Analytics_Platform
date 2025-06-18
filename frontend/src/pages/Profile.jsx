@@ -105,16 +105,17 @@ return (
       {/* LEFT SECTION */}
       <div className="profile-left">
         <div className="avatar-container">
-  <img
-    src={
-      profileImage ||
-      (user?.profileImage
-        ? `http://localhost:8000${user.profileImage}`
-        : '/images/avatar.png')
-    }
-    alt="Profile"
-    className="profile-avatar"
-  />
+<img
+  src={
+    profileImage ||
+    (user?.profileImage
+      ? `http://localhost:8000${user.profileImage}`  // ✅ correct backend path
+      : '/images/avatar.png')                        // default fallback
+  }
+  alt="Profile"
+  className="profile-avatar"
+/>
+
 
   {isEditingUsername && (
     <label className="upload-icon-button">

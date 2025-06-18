@@ -9,10 +9,12 @@ const { protect, adminOnly } = require('../middleware/auth');
 // GET /api/admin/stats
 router.get('/stats', protect, adminOnly, async (req, res) => {
   try {
-    const totalUsers = await User.countDocuments();
+    // ✅ Only user count (excluding admins)
+    const totalUsers = await User.countDocuments({ role: 'user' });
+
     const totalUploads = await ExcelRecord.countDocuments();
 
-    // 🔢 Most used chart from RecentChart
+    // 🔢 Most used chart
     const chartAggregation = await RecentChart.aggregate([
       { $match: { chartType: { $exists: true, $ne: null } } },
       { $group: { _id: "$chartType", count: { $sum: 1 } } },
@@ -21,7 +23,7 @@ router.get('/stats', protect, adminOnly, async (req, res) => {
     ]);
     const mostUsedChart = chartAggregation[0]?._id || 'N/A';
 
-    // 📊 Daily uploads from ExcelRecord
+    // 📊 Daily uploads
     const uploadsPerDay = await ExcelRecord.aggregate([
       {
         $group: {
@@ -38,7 +40,7 @@ router.get('/stats', protect, adminOnly, async (req, res) => {
       }
     ]);
 
-    // 📈 Daily 'analyze' activity logs from Activity model
+    // 📈 Daily analyze logs
     const analyzedPerDay = await Activity.aggregate([
       { $match: { action: 'analyze' } },
       {
@@ -56,26 +58,18 @@ router.get('/stats', protect, adminOnly, async (req, res) => {
       }
     ]);
 
-    // 🧩 Merge by date
+    // 🧩 Merge chart data
     const chartDataMap = {};
 
-    uploadsPerDay.forEach(item => {
-      chartDataMap[item.date] = {
-        date: item.date,
-        uploads: item.uploads,
-        analyzed: 0
-      };
+    uploadsPerDay.forEach(({ date, uploads }) => {
+      chartDataMap[date] = { date, uploads, analyzed: 0 };
     });
 
-    analyzedPerDay.forEach(item => {
-      if (chartDataMap[item.date]) {
-        chartDataMap[item.date].analyzed = item.analyzed;
+    analyzedPerDay.forEach(({ date, analyzed }) => {
+      if (chartDataMap[date]) {
+        chartDataMap[date].analyzed = analyzed;
       } else {
-        chartDataMap[item.date] = {
-          date: item.date,
-          uploads: 0,
-          analyzed: item.analyzed
-        };
+        chartDataMap[date] = { date, uploads: 0, analyzed };
       }
     });
 
@@ -83,13 +77,19 @@ router.get('/stats', protect, adminOnly, async (req, res) => {
       (a, b) => new Date(a.date) - new Date(b.date)
     );
 
-    // 🟢🟥 Online/Offline Stats
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
 
-    const onlineCount = await User.countDocuments({ lastSeen: { $gte: fiveMinutesAgo } });
-    const offlineCount = totalUsers - onlineCount;
+// ✅ NEW: Use 20 seconds instead of 5 minutes
+const twentySecondsAgo = new Date(Date.now() - 20 * 1000);
+const onlineCount = await User.countDocuments({
+  role: 'user',
+  lastSeen: { $gte: twentySecondsAgo }
+});
+const offlineCount = totalUsers - onlineCount;
 
-    // ✅ Final response
+
+
+
+    // ✅ Send JSON response
     res.json({
       totalUsers,
       totalUploads,
@@ -97,8 +97,8 @@ router.get('/stats', protect, adminOnly, async (req, res) => {
       chartData,
       onlineStats: {
         online: onlineCount,
-        offline: offlineCount,
-      },
+        offline: offlineCount
+      }
     });
 
   } catch (error) {

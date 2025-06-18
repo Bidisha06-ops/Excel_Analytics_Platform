@@ -24,52 +24,52 @@ const RecentCharts = () => {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchCharts = async () => {
-      const token = localStorage.getItem('token');
-      const config = { headers: { Authorization: `Bearer ${token}` } };
+useEffect(() => {
+  const fetchCharts = async () => {
+    const token = localStorage.getItem('token');
+    const config = { headers: { Authorization: `Bearer ${token}` } };
 
-      try {
-        const res = await axios.get('http://localhost:8000/api/recentCharts', config);
-        const now = moment();
+    try {
+      const res = await axios.get('http://localhost:8000/api/recentCharts', config);
+      const now = moment().startOf('day'); // ⬅️ Important fix here
 
-        // Grouping logic with deduplication per recordId per day
-        const seen = {}; // { dateKey_recordId: true }
-        const grouped = {
-          today: [],
-          yesterday: [],
-          lastWeek: [],
-          lastMonth: [],
-        };
+      const seen = {};
+      const grouped = {
+        today: [],
+        yesterday: [],
+        lastWeek: [],
+        lastMonth: [],
+      };
 
-        res.data.forEach((chart) => {
-          const created = moment(chart.createdAt);
-          const daysAgo = now.diff(created, 'days');
+      res.data.forEach((chart) => {
+        const created = moment(chart.createdAt).startOf('day'); // ⬅️ Fix here too
+        const daysAgo = now.diff(created, 'days');
 
-          let groupKey = null;
-          if (daysAgo === 0) groupKey = 'today';
-          else if (daysAgo === 1) groupKey = 'yesterday';
-          else if (daysAgo <= 7) groupKey = 'lastWeek';
-          else if (daysAgo <= 30) groupKey = 'lastMonth';
+        let groupKey = null;
+        if (daysAgo === 0) groupKey = 'today';
+        else if (daysAgo === 1) groupKey = 'yesterday';
+        else if (daysAgo <= 7) groupKey = 'lastWeek';
+        else if (daysAgo <= 30) groupKey = 'lastMonth';
 
-          if (groupKey) {
-            const dateKey = created.format('YYYY-MM-DD');
-            const uniqueKey = `${dateKey}_${chart.recordId}`;
-            if (!seen[uniqueKey]) {
-              grouped[groupKey].push(chart);
-              seen[uniqueKey] = true;
-            }
+        if (groupKey) {
+          const dateKey = created.format('YYYY-MM-DD');
+          const uniqueKey = `${dateKey}_${chart.recordId}`;
+          if (!seen[uniqueKey]) {
+            grouped[groupKey].push(chart);
+            seen[uniqueKey] = true;
           }
-        });
+        }
+      });
 
-        setChartsBySection(grouped);
-      } catch (err) {
-        console.error('Failed to fetch recent charts:', err);
-      }
-    };
+      setChartsBySection(grouped);
+    } catch (err) {
+      console.error('Failed to fetch recent charts:', err);
+    }
+  };
 
-    fetchCharts();
-  }, []);
+  fetchCharts();
+}, []);
+
 
   const renderSection = (label, sectionKey, items, showUpload = false) => {
     const page = pageIndex[sectionKey];
