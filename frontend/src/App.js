@@ -28,19 +28,9 @@ import axios from 'axios';
 import { useEffect } from 'react';
 
 function AppRoutes() {
-  const { user, isBlocked, blockChecked } = useAuth();
+  const { user, isBlocked, blockChecked, logout } = useAuth();
 
-  // ✅ Show nothing until block status is known (prevents false render)
-  if (user && !blockChecked) {
-    return null; // or a loading spinner
-  }
-
-  // ✅ Show BlockedPage if user is blocked
-  if (user && isBlocked) {
-    return <BlockedPage />;
-  }
-
-  // ✅ Ping user presence
+  // ✅ Ping user presence every 5 seconds
   useEffect(() => {
     const pingInterval = setInterval(() => {
       const token = localStorage.getItem('token');
@@ -57,6 +47,27 @@ function AppRoutes() {
 
     return () => clearInterval(pingInterval);
   }, []);
+
+  // ✅ Auto logout if user is blocked
+  useEffect(() => {
+    if (user && isBlocked) {
+      const timeout = setTimeout(() => {
+        logout(); // Auto logout after 5 seconds
+      }, 5000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [user, isBlocked, logout]);
+
+  // ✅ Wait until block status check completes
+  if (user && !blockChecked) {
+    return <div className="loading-screen">Checking user status...</div>;
+  }
+
+  // ✅ Blocked user view
+  if (user && isBlocked) {
+    return <BlockedPage />;
+  }
 
   return (
     <Routes>

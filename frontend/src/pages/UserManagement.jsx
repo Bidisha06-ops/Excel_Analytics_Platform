@@ -5,6 +5,8 @@ import '../styles/userManagement.css';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null);
 
   const fetchUsers = async () => {
     try {
@@ -12,7 +14,7 @@ const UserManagement = () => {
       const now = new Date();
       const updatedUsers = res.data.map(user => {
         const lastSeen = new Date(user.lastSeen);
-        const isOnline = (now - lastSeen) <= 20000; // ✅ 20 sec window
+        const isOnline = (now - lastSeen) <= 20000;
         return { ...user, isOnline };
       });
       setUsers(updatedUsers);
@@ -21,10 +23,11 @@ const UserManagement = () => {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDeleteConfirm = async () => {
     try {
-      await axios.delete(`http://localhost:8000/api/user/delete/${id}`);
-      setUsers(prev => prev.filter(user => user._id !== id));
+      await axios.delete(`http://localhost:8000/api/user/delete/${selectedUserId}`);
+      setUsers(prev => prev.filter(user => user._id !== selectedUserId));
+      setShowModal(false);
     } catch (error) {
       console.error('Delete failed:', error);
     }
@@ -39,9 +42,14 @@ const UserManagement = () => {
     }
   };
 
+  const handleDeleteClick = (userId) => {
+    setSelectedUserId(userId);
+    setShowModal(true);
+  };
+
   useEffect(() => {
     fetchUsers();
-    const interval = setInterval(fetchUsers, 5000); // auto-refresh every 5 sec
+    const interval = setInterval(fetchUsers, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -69,7 +77,7 @@ const UserManagement = () => {
                 <td>
                   {user.profileImage ? (
                     <img
-                      src={`http://localhost:8000${user.profileImage}`} // ✅ FIXED
+                      src={`http://localhost:8000${user.profileImage}`}
                       alt={user.username}
                       className="avatar"
                     />
@@ -98,7 +106,7 @@ const UserManagement = () => {
                     </button>
                     <button
                       className="btn btn-danger"
-                      onClick={() => handleDelete(user._id)}
+                      onClick={() => handleDeleteClick(user._id)}
                     >
                       Delete
                     </button>
@@ -114,6 +122,23 @@ const UserManagement = () => {
           </tbody>
         </table>
       </div>
+
+      {/* ✅ Confirmation Modal */}
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <p>Are you sure you want to delete this user? This action cannot be undone.</p>
+            <div className="modal-actions">
+              <button className="btn btn-danger" onClick={handleDeleteConfirm}>
+                Yes, Delete
+              </button>
+              <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
