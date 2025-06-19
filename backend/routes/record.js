@@ -20,6 +20,32 @@ router.get('/myuploads', protect, async (req, res) => {
   }
 });
 
+router.get('/allfiles', async (req, res) => {
+  try {
+    const files = await ExcelRecord.find().populate('uploadedBy', 'name email');
+    res.status(200).json(files);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+// @route   DELETE /api/excel/:id
+// @desc    Delete a specific Excel file by ID
+// @access  Protected (only admin or uploader can delete ideally)
+router.delete('/allfiles/delete/:id', async (req, res) => {
+  try {
+    const record = await ExcelRecord.findById(req.params.id);
+    if (!record) {
+      return res.status(404).json({ message: 'File not found' });
+    }
+
+    await ExcelRecord.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: 'File deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
 /**
  * @route   GET /api/records/:id
  * @desc    Get Excel record by ID
