@@ -1,15 +1,8 @@
 const express = require("express");
-const mongoose = require("mongoose");        // <-- add this line
+const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./config/db");
-
-// Route files
-const authRoutes = require("./routes/auth");
-const userRoutes = require("./routes/user");
-const uploadRoutes = require("./routes/upload");
-const recordRoutes = require("./routes/record");
-const activityRoutes = require("./routes/activity");
 
 // Load environment variables
 dotenv.config();
@@ -18,42 +11,52 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-// Middleware
+// ✅ Middleware
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: 'http://localhost:3000', // Update to your frontend URL in production
   credentials: true,
 }));
-app.use(express.json()); // For parsing application/json
+app.use(express.json());
 
-// Static file serving (for profile images or uploads if needed)
+// ✅ Static file serving (for profile images or uploaded files)
 app.use('/uploads', express.static('uploads'));
 
-// Routes
-app.use("/api/auth", authRoutes);          // Auth: login/register
-app.use("/api/user", userRoutes);          // User profile management
-app.use("/api/upload", uploadRoutes);      // Excel file uploads
-app.use("/api/records", recordRoutes);     // Get uploaded files
-app.use("/api/activity", activityRoutes);  // Activity log routes
+// ✅ Route Imports
+const authRoutes = require("./routes/auth");
+const userRoutes = require("./routes/user");
+const uploadRoutes = require("./routes/upload");
+const recordRoutes = require("./routes/record");
+const activityRoutes = require("./routes/activity");
+const aiSuggestionRoutes = require('./routes/aiRoutes');
+const recentChartsRoutes = require('./routes/recentCharts');
+const adminRoutes = require('./routes/admin');               // Admin user management
+const adminAnalyticsRoutes = require('./routes/adminAnalytics'); // Usage analytics
 
+// ✅ Mount API Routes
+app.use("/api/auth", authRoutes);                   // Login/Register
+app.use("/api/user", userRoutes);                   // Profile, block status
+app.use("/api/upload", uploadRoutes);               // File uploads
+app.use("/api/records", recordRoutes);              // Uploaded file info
+app.use("/api/activity", activityRoutes);           // Activity logs
+app.use("/api/ai", aiSuggestionRoutes);             // AI chart suggestions
+app.use("/api/recentCharts", recentChartsRoutes);   // Recent chart logs
+app.use("/api/admin", adminRoutes);                 // Admin: user controls
+app.use("/api/admin", adminAnalyticsRoutes);        // Admin: usage analytics
 
-// Storage stats endpoint
+// ✅ MongoDB Storage Stats Endpoint
 app.get("/api/storage", async (req, res) => {
   try {
-    if (mongoose.connection.readyState !== 1) { // 1 means connected
+    if (mongoose.connection.readyState !== 1) {
       return res.status(500).json({ error: "MongoDB not connected yet" });
-    
     }
-    
-    const db = mongoose.connection.db;
-   
 
+    const db = mongoose.connection.db;
     if (!db) {
       return res.status(500).json({ error: "Database object not available" });
     }
 
     const stats = await db.stats();
-
-    const totalQuota = 512 * 1024 * 1024; // 512MB quota (adjust if needed)
+    const totalQuota = 512 * 1024 * 1024; // 512MB total quota
 
     res.json({
       storageSize: stats.storageSize,
@@ -65,37 +68,25 @@ app.get("/api/storage", async (req, res) => {
       indexSize: stats.indexSize,
     });
   } catch (error) {
-    console.error("Error fetching db stats:", error);
+    console.error("Error fetching DB stats:", error);
     res.status(500).json({ error: "Failed to fetch storage stats" });
   }
 });
 
-
-// Root route
+// ✅ Default Root Route
 app.get("/", (req, res) => {
   res.status(200).json({ message: "Welcome to the Excel Analytics Platform API" });
 });
 
-// Connect to DB and then start server
+// ✅ Connect to MongoDB & Start Server
 connectDB()
   .then(() => {
-    console.log("✅ MongoDB connected successfully");  // <-- add this line
+    console.log("✅ MongoDB connected successfully");
     app.listen(PORT, () => {
       console.log(`✅ Server running at http://localhost:${PORT}`);
     });
   })
   .catch((err) => {
-    console.error("Failed to connect to database", err);
+    console.error("❌ Failed to connect to database:", err);
     process.exit(1);
   });
-
-
-const aiSuggestionRoutes = require('./routes/aiRoutes');
-app.use('/api/ai/', aiSuggestionRoutes);
-
-const recentChartsRoutes = require('./routes/recentCharts');
-app.use('/api/recentCharts', recentChartsRoutes);
-
-
-const adminRoutes = require('./routes/admin');
-app.use('/api/admin', adminRoutes);
