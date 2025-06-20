@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend, LineChart, Line
+  PieChart, Pie, Cell, Legend
 } from 'recharts';
 
 const PIE_COLORS = ['#FF8042', '#00C49F', '#FFBB28', '#0088FE', '#845EC2'];
@@ -20,7 +20,13 @@ const ChartTrackingAnalytics = ({ data }) => {
 
       {/* Summary Cards */}
       <div className="summary-boxes" style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
-        <div className="summary-card">📁 Total Analyzed Files: <strong>{data.topAnalyzedFiles?.length || 0}</strong></div>
+        <div className="summary-card">
+  🧑 Top Analyzer:&nbsp;
+  <strong>
+    {data.userAnalysisStats?.length > 0 ? data.userAnalysisStats[0].username : 'N/A'}
+  </strong>
+</div>
+
         <div className="summary-card">🏆 Most Viewed Chart: <strong>{mostViewed}</strong></div>
       </div>
 
@@ -91,24 +97,64 @@ const ChartTrackingAnalytics = ({ data }) => {
 
       {/* Individual User Analyzed Records */}
       <div className="chart-box" style={{ marginTop: '2rem', width: '100%' }}>
-        <h4>Analyzed Records by Users</h4>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ background: '#f0f0f0' }}>
-              <th style={{ padding: '8px', border: '1px solid #ddd' }}>Username</th>
-              <th style={{ padding: '8px', border: '1px solid #ddd' }}>Analyzed Records</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.userAnalysisStats?.map((user, index) => (
-              <tr key={index}>
-                <td style={{ padding: '8px', border: '1px solid #ddd' }}>{user.username}</td>
-                <td style={{ padding: '8px', border: '1px solid #ddd' }}>{user.count}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+  <h4>Analyzed Records by Users</h4>
+  <div style={{
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: '1rem',
+    marginTop: '1rem'
+  }}>
+    {data.userAnalysisStats?.map((user, index) => {
+      const total = data.userAnalysisStats.reduce((sum, u) => sum + u.count, 0);
+      const percentage = total > 0 ? ((user.count / total) * 100).toFixed(0) : 0;
+
+      return (
+        <div key={index} style={{
+          background: '#fff',
+          borderRadius: '12px',
+          padding: '1rem',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          gap: '0.5rem'
+        }}>
+          {/* Just Username */}
+          <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>
+            {user.username}
+          </div>
+
+          {/* Progress Bar */}
+          <div style={{
+            width: '100%',
+            background: '#eee',
+            height: '6px',
+            borderRadius: '3px',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              width: `${percentage}%`,
+              background: '#00C49F',
+              height: '100%'
+            }} />
+          </div>
+
+          {/* Count */}
+          <div style={{
+            fontSize: '0.85rem',
+            color: '#333',
+            textAlign: 'right',
+            marginTop: '4px',
+            fontWeight: 500
+          }}>
+            {user.count} analyses
+          </div>
+        </div>
+      );
+    })}
+  </div>
+</div>
+
     </div>
   );
 };
