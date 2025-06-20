@@ -85,13 +85,15 @@ const AdminDashboard = () => {
       if (!grouped[key]) {
         grouped[key] = { date: key, uploads: 0, analyzed: 0 };
       }
+      
       grouped[key].uploads += item.uploads || 0;
+     
       grouped[key].analyzed += item.analyzed || 0;
     });
 
     return Object.values(grouped).sort((a, b) => new Date(a.date) - new Date(b.date));
   };
-
+   
   const filteredData = groupChartData(stats.chartData, viewType);
 
   const onlineOfflineData = [
@@ -122,8 +124,9 @@ const AdminDashboard = () => {
         </div>
       </div>
 
+       <div className='flex gap-5'>
       {/* 📈 Uploads vs Analyzed Files Line Chart */}
-      <div className="admin-chart-section">
+      <div className="admin-chart-section ">
         <div className="admin-chart-header">
           <h3 className="admin-chart-title"><b>Uploads vs Analyzed Files</b></h3>
           <div className="view-toggle">
@@ -159,7 +162,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* 🟢🔴 Pie Chart: Online vs Offline Users */}
-      <div className="admin-chart-section">
+      <div className="admin-chart-section ">
         <div className="admin-chart-header">
           <h3 className="admin-chart-title"><b>Online vs Offline Users</b></h3>
         </div>
@@ -183,6 +186,7 @@ const AdminDashboard = () => {
             <Legend />
           </PieChart>
         </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );
