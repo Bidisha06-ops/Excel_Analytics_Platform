@@ -27,7 +27,7 @@ router.get('/stats', protect, adminOnly, async (req, res) => {
     const uploadsPerDay = await ExcelRecord.aggregate([
       {
         $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$uploadedAt" } },
           uploads: { $sum: 1 }
         }
       },
