@@ -17,11 +17,12 @@ const recentChartSchema = new mongoose.Schema({
   },
   action: {
     type: String,
-    default: 'analyze',
+    enum: ['analyze', 'view'], // only allow these two actions
+    required: true,
   },
   chartType: {
-    type: String, // e.g. "Bar Chart", "Line Chart"
-    required: false,
+    type: String, // e.g., "Bar Chart", "Line Chart", "3D Pie Chart"
+    required: true,
   },
 }, {
   timestamps: true,

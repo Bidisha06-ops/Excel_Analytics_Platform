@@ -12,6 +12,7 @@ router.get('/usage-analytics', protect, adminOnly, async (req, res) => {
     const oneMonthAgo = new Date(now);
     oneMonthAgo.setMonth(now.getMonth() - 1);
 
+    // 📁 Top Uploaders (filter only normal users)
     const topUploaders = await ExcelRecord.aggregate([
       { $group: { _id: "$uploadedBy", count: { $sum: 1 } } },
       { $sort: { count: -1 } },
@@ -25,21 +26,22 @@ router.get('/usage-analytics', protect, adminOnly, async (req, res) => {
         }
       },
       { $unwind: "$user" },
+      { $match: { "user.role": "user" } },
       { $project: { username: "$user.username", count: 1 } }
     ]);
 
+    // 📅 Upload Trends
     const uploadTrends = await ExcelRecord.aggregate([
       {
         $group: {
-          _id: {
-            $dateToString: { format: "%Y-%m-%d", date: "$uploadedAt" }
-          },
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$uploadedAt" } },
           count: { $sum: 1 }
         }
       },
       { $sort: { _id: 1 } }
     ]);
 
+    // 📄 File Types
     const fileTypes = await ExcelRecord.aggregate([
       {
         $group: {
@@ -58,17 +60,43 @@ router.get('/usage-analytics', protect, adminOnly, async (req, res) => {
       { $sort: { count: -1 } }
     ]);
 
-    const largestFiles = await ExcelRecord.find()
-      .sort({ 'data.length': -1 })
-      .limit(5)
-      .select('filename data');
+    // ✅ Individual User Upload Activity (only users with role: user)
+    const allUsers = await User.find({ role: 'user' }).select('username profileImage');
+    const userUploads = await ExcelRecord.aggregate([
+      {
+        $group: {
+          _id: "$uploadedBy",
+          count: { $sum: 1 },
+          files: { $push: "$filename" }
+        }
+      }
+    ]);
+    const uploadMap = {};
+    userUploads.forEach(upload => {
+      uploadMap[upload._id.toString()] = {
+        count: upload.count,
+        files: upload.files
+      };
+    });
+    const userUploadDetails = allUsers.map(user => {
+      const uploads = uploadMap[user._id.toString()] || { count: 0, files: [] };
+      return {
+        username: user.username,
+        profileImage: user.profileImage || "",
+        count: uploads.count,
+        files: uploads.files
+      };
+    });
 
+    // 📊 Viewed Chart Types
     const viewedChartTypes = await RecentChart.aggregate([
       { $group: { _id: "$chartType", count: { $sum: 1 } } },
       { $sort: { count: -1 } }
     ]);
 
+    // 🔍 Top Analyzed Files
     const topAnalyzedFiles = await RecentChart.aggregate([
+      { $match: { action: 'analyze' } },
       { $group: { _id: "$recordId", count: { $sum: 1 } } },
       { $sort: { count: -1 } },
       { $limit: 5 },
@@ -84,17 +112,20 @@ router.get('/usage-analytics', protect, adminOnly, async (req, res) => {
       { $project: { filename: "$record.filename", count: 1 } }
     ]);
 
+    // ⏰ Peak Analysis Hours
     const peakAnalysisHours = await RecentChart.aggregate([
       { $project: { hour: { $hour: "$createdAt" } } },
       { $group: { _id: "$hour", count: { $sum: 1 } } },
       { $sort: { _id: 1 } }
     ]);
 
+    // 📤 Export Stats
     const exportStats = await Activity.aggregate([
       { $match: { action: { $in: ["export_pdf", "export_png"] } } },
       { $group: { _id: "$action", count: { $sum: 1 } } }
     ]);
 
+    // 📅 Daily Active Users
     const dailyActiveUsers = await Activity.aggregate([
       {
         $group: {
@@ -113,7 +144,9 @@ router.get('/usage-analytics', protect, adminOnly, async (req, res) => {
       { $sort: { _id: 1 } }
     ]);
 
+    // 🧑‍🤝‍🧑 Registrations (only role: user)
     const registrations = await User.aggregate([
+      { $match: { role: "user" } },
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
@@ -123,10 +156,13 @@ router.get('/usage-analytics', protect, adminOnly, async (req, res) => {
       { $sort: { _id: 1 } }
     ]);
 
+    // 😴 Inactive Users (only role: user)
     const inactiveUsers = await User.find({
-      lastLogin: { $lt: oneMonthAgo }
+      lastLogin: { $lt: oneMonthAgo },
+      role: "user"
     }).select("username email");
 
+    // 🔥 Login Heatmap
     const loginHeatmap = await Activity.aggregate([
       { $match: { action: "login" } },
       {
@@ -144,10 +180,55 @@ router.get('/usage-analytics', protect, adminOnly, async (req, res) => {
       { $sort: { "_id.day": 1, "_id.hour": 1 } }
     ]);
 
+    // 📊 User-wise Analysis Count
+    const userAnalysisStats = await RecentChart.aggregate([
+      { $match: { action: 'analyze' } },
+      {
+        $group: {
+          _id: '$userId',
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $project: {
+          _id: 0,
+          username: '$user.username',
+          count: 1
+        }
+      },
+      { $sort: { count: -1 } }
+    ]);
+
+    // ✅ Final Response
     res.json({
-      fileUploadStats: { topUploaders, uploadTrends, fileTypes, largestFiles },
-      chartTracking: { viewedChartTypes, topAnalyzedFiles, peakAnalysisHours, exportStats },
-      userEngagement: { dailyActiveUsers, registrations, inactiveUsers, loginHeatmap }
+      fileUploadStats: {
+        topUploaders,
+        uploadTrends,
+        fileTypes,
+        userUploadDetails
+      },
+      chartTracking: {
+        viewedChartTypes,
+        topAnalyzedFiles,
+        peakAnalysisHours,
+        exportStats,
+        userAnalysisStats
+      },
+      userEngagement: {
+        dailyActiveUsers,
+        registrations,
+        inactiveUsers,
+        loginHeatmap
+      }
     });
 
   } catch (err) {

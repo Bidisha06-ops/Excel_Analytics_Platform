@@ -3,7 +3,6 @@
   padding: 30px;
   font-family: 'Circe Contrast', sans-serif;
   box-sizing: border-box;
-  /* Make wrapper a flex container with vertical layout so bottom panel can go below */
   display: flex;
   flex-direction: column;
   gap: 20px;

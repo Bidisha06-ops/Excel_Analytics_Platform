@@ -1,7 +1,13 @@
 .usage-analytics-page {
-  padding: 2rem;
-  background-color: #f9fafc;
-  font-family: 'Segoe UI', sans-serif;
+  padding: 40px;
+  background: #f9fafb;
+  min-height: 100vh;
+  font-family: 'Circe Contrast', sans-serif;
+  font-weight: bold;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04); /* Mild shadow */
+  position: relative;
+  box-sizing: border-box;
 }
 
 .tab-buttons {
@@ -44,10 +50,9 @@
 }
 
 .tab-content {
-  background: white;
+  background: #f9fafb;
   padding: 1.5rem;
   border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
 .loading-message,
