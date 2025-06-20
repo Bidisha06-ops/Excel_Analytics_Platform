@@ -1,3 +1,4 @@
+/* Main Container */
 .user-management-container {
   padding: 40px;
   background: #f9fafb;
@@ -18,6 +19,7 @@
   color: #222;
 }
 
+/* User Cards */
 .user-card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -61,7 +63,6 @@
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #ddd;
-  margin: auto;
 }
 
 .user-avatar.placeholder {
@@ -71,13 +72,15 @@
   background: #eee;
 }
 
+/* Modal Overlay - Updated background with blur/fade */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.3); /* transparent black */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -85,40 +88,34 @@
   animation: fadeInModal 0.3s ease-in-out;
 }
 
+/* Modal Box - wider now */
 .modal-box {
-  background: #ffffff;
-  padding: 2rem;
-  border-radius: 12px;
+  background-color: #fff;
+  padding: 24px 28px;
+  border-radius: 16px;
+  max-width: 900px; /* Increased width */
   width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
+  height: 500px;
   overflow-y: auto;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
-  animation: fadeIn 0.25s ease-in-out;
-  position: relative;
-  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+.modal-box::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-box::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 8px;
 }
 
 @keyframes fadeInModal {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
+/* User Info */
 .user-info {
   display: flex;
   align-items: center;
@@ -147,37 +144,43 @@
   color: #666;
 }
 
+/* File Cards */
 .file-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  padding-right: 6px;
 }
 
 .file-card {
-  background: #f9f9f9;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 12px 16px;
+  background: #f0f4f8;
+  border: 1px solid #d0d7de;
+  border-radius: 10px;
+  padding: 14px 16px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  flex-wrap: wrap;
+  transition: background 0.2s ease;
+}
+
+.file-card:hover {
+  background: #e8f0f9;
 }
 
 .file-info h4 {
   margin: 0;
   font-size: 15px;
-  color: #333;
+  font-weight: 600;
+  color: #1f2937;
 }
 
 .file-info small {
   font-size: 12px;
-  color: #888;
+  color: #6b7280;
 }
 
 .file-actions {
   display: flex;
-  align-items: center;
   gap: 10px;
   margin-top: 6px;
 }
@@ -187,8 +190,8 @@
   font-size: 13px;
   border-radius: 4px;
   background-color: #fff;
-  border: 1px solid #c62828;
-  color: #c62828;
+  border: 1px solid #e53935;
+  color: #e53935;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
@@ -197,8 +200,11 @@
   background-color: #fdecea;
 }
 
+/* Modal Footer */
 .modal-actions {
-  margin-top: 24px;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
@@ -208,7 +214,7 @@
 .btn {
   font-size: 13px;
   padding: 8px 16px;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   border: none;
@@ -217,12 +223,12 @@
 }
 
 .btn-secondary {
-  background-color: #ccc;
-  color: #222;
+  background-color: #f3f4f6;
+  color: #333;
 }
 
 .btn-secondary:hover {
-  background-color: #b3b3b3;
+  background-color: #d1d5db;
 }
 
 .btn-danger {
@@ -234,8 +240,47 @@
   background-color: #c62828;
 }
 
+/* Delete Modal Box */
+.confirm-delete-box {
+  background: #fff;
+  padding: 32px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  animation: fadeInModal 0.3s ease-in-out;
+}
+
+.confirm-delete-box .icon {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.confirm-delete-box h3 {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* Other */
 .no-users {
   text-align: center;
   padding: 20px;
   color: #888;
+}
+
+.search-box {
+  width: 100%;
+  max-width: 300px;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border 0.2s ease;
+}
+
+.search-box:focus {
+  border-color: #6e7071;
 }

@@ -7,6 +7,7 @@ const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState(""); // ✅ NEW STATE
 
   const fetchUsers = async () => {
     try {
@@ -53,9 +54,27 @@ const UserManagement = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // ✅ LIVE FILTERING LOGIC
+  const filteredUsers = users.filter(user =>
+    user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="user-management-container">
       <h2 className="heading">User Management</h2>
+
+      {/* ✅ Search Input */}
+      <div style={{ marginBottom: '20px' }}>
+        <input
+          type="text"
+          placeholder="Search by username or email..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="search-box"
+        />
+      </div>
+
       <div className="table-wrapper">
         <table className="user-table">
           <thead>
@@ -71,7 +90,7 @@ const UserManagement = () => {
             </tr>
           </thead>
           <tbody>
-            {users.map((user, idx) => (
+            {filteredUsers.map((user, idx) => (
               <tr key={user._id}>
                 <td>{idx + 1}</td>
                 <td>
@@ -114,7 +133,7 @@ const UserManagement = () => {
                 </td>
               </tr>
             ))}
-            {users.length === 0 && (
+            {filteredUsers.length === 0 && (
               <tr>
                 <td colSpan="8" className="no-users">No users found.</td>
               </tr>
@@ -123,7 +142,7 @@ const UserManagement = () => {
         </table>
       </div>
 
-      {/* ✅ Confirmation Modal */}
+      {/* Modal */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-box">
