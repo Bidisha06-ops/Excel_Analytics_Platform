@@ -1,8 +1,13 @@
 .user-management-container {
-  padding: 32px;
-  font-family: 'Segoe UI', Tahoma, sans-serif;
-  background-color: #f7f8fa;
+  padding: 40px;
+  background: #f9fafb;
   min-height: 100vh;
+  font-family: 'Circe Contrast', sans-serif;
+  font-weight: bold;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04); /* Mild shadow */
+  position: relative;
+  box-sizing: border-box;
 }
 
 .heading {

@@ -30,7 +30,7 @@ const AdminDashboard = () => {
 
   const [viewType, setViewType] = useState('day'); // day | week | month
 
-  // ✅ Fetch stats function
+  // ✅ Fetch stats from backend
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -43,42 +43,43 @@ const AdminDashboard = () => {
     }
   };
 
-  // ✅ Initial fetch + interval for stats
+  // ✅ Ping backend to keep user online
   useEffect(() => {
-    fetchStats(); // initial fetch
-    const statsInterval = setInterval(fetchStats, 20000); // 20 sec refresh
+    const pingInterval = setInterval(() => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
 
+      axios.patch('http://localhost:8000/api/user/ping', {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).catch(err => {
+        console.error('Ping failed:', err);
+      });
+    }, 20000);
+
+    return () => clearInterval(pingInterval);
+  }, []);
+
+  // ✅ Initial fetch + 20s refresh
+  useEffect(() => {
+    fetchStats();
+    const statsInterval = setInterval(fetchStats, 20000);
     return () => clearInterval(statsInterval);
   }, []);
 
-  // ✅ Ping logic to keep user online
-useEffect(() => {
-  const pingInterval = setInterval(() => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    axios.patch('http://localhost:8000/api/user/ping', {}, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).catch(err => {
-      console.error('Ping failed:', err);
-    });
-  }, 20000); // every 5 seconds
-
-  return () => clearInterval(pingInterval);
-}, []);
-
-
-  // ✅ Group data (day, week, month)
+  // ✅ Group data by viewType
   const groupChartData = (data, type) => {
     const grouped = {};
+
     data.forEach(item => {
       let key;
+
       if (type === 'week') {
         key = moment(item.date).startOf('isoWeek').format('YYYY-[W]WW');
       } else if (type === 'month') {
         key = moment(item.date).format('YYYY-MM');
       } else {
-        key = item.date;
+        // ✅ Normalize all to YYYY-MM-DD for day view
+        key = moment(item.date).format('YYYY-MM-DD');
       }
 
       if (!grouped[key]) {
@@ -121,7 +122,7 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* 📈 Line Chart */}
+      {/* 📈 Uploads vs Analyzed Files Line Chart */}
       <div className="admin-chart-section">
         <div className="admin-chart-header">
           <h3 className="admin-chart-title"><b>Uploads vs Analyzed Files</b></h3>
@@ -157,7 +158,7 @@ useEffect(() => {
         </ResponsiveContainer>
       </div>
 
-      {/* 🟢🔴 Pie Chart */}
+      {/* 🟢🔴 Pie Chart: Online vs Offline Users */}
       <div className="admin-chart-section">
         <div className="admin-chart-header">
           <h3 className="admin-chart-title"><b>Online vs Offline Users</b></h3>
@@ -188,4 +189,3 @@ useEffect(() => {
 };
 
 export default AdminDashboard;
-  
