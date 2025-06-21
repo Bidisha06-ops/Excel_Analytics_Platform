@@ -56,21 +56,18 @@ const AdminDashboardLayout = () => {
           />
         </div>
         <div className="header-center">Admin Panel</div>
-        <div className="header-right">
-          <span className="header-username">
-            {adminUser?.username || localStorage.getItem('username') || 'Admin'}
-          </span>
-          <img
-            src={
-              adminUser?.profileImage
-                ? `${BACKEND_URL}${adminUser.profileImage}`
-                : '/images/avatar.png'
-            }
-            alt="Admin Avatar"
-            className="dashboardlayout-profile-pic"
-            onClick={() => navigate('/dashboard/profile')}
-          />
-        </div>
+<div className="header-right">
+  <img
+    src={
+      adminUser?.profileImage
+        ? `${BACKEND_URL}${adminUser.profileImage}`
+        : '/images/admin.png'
+    }
+    alt="Admin Avatar"
+    className="dashboardlayout-profile-pic"
+  />
+</div>
+
       </header>
 
       {/* Sidebar and Content */}
