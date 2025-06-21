@@ -68,7 +68,7 @@ const AdminDashboardLayout = () => {
             }
             alt="Admin Avatar"
             className="dashboardlayout-profile-pic"
-            onClick={() => navigate('/admin/profile')}
+            onClick={() => navigate('/dashboard/profile')}
           />
         </div>
       </header>
